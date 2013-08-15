@@ -9,6 +9,17 @@
 #include <osgViewer/Viewer>
 #include <osgViewer/ViewerEventHandlers>
 
+GLint getMaxNumberOfUniforms(osg::GraphicsContext* context)
+{
+	context->realize();
+	context->makeCurrent();
+	GLint maxNumUniforms = 0;
+	glGetIntegerv(GL_MAX_VERTEX_UNIFORM_COMPONENTS, &maxNumUniforms);
+	context->releaseContext();
+
+	return maxNumUniforms;
+}
+
 osg::ref_ptr<osg::Switch> setupScene()
 {
 	osg::ref_ptr<osg::Switch> switchNode = new osg::Switch;
@@ -43,6 +54,15 @@ int main(int argc, char** argv)
 
 	// add the stats handler
     viewer->addEventHandler(new osgViewer::StatsHandler);
+
+	// get context to determine max number of uniforms in vertex shader
+	osgViewer::ViewerBase::Contexts contexts;
+	viewer->getContexts(contexts);
+	GLint maxNumUniforms = getMaxNumberOfUniforms(contexts[0]);
+	contexts[0]->getState()->setUseModelViewAndProjectionUniforms(true);
+
+	// we need to reserve some space for modelViewMatrix, projectionMatrix, modelViewProjectionMatrix and normalMatrix, we also need 16 float uniforms per matrix
+	unsigned int maxInstanceMatrices = (maxNumUniforms-64) / 16;
 
 	return viewer->run();
 }

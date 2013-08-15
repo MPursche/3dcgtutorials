@@ -32,7 +32,7 @@ set(data
 )
 
 # Create executable
-add_executable(${target} ${sources})
+add_executable(${target} ${sources} ${shader})
 
 target_link_libraries(${target}
     ${OPENSCENEGRAPH_LIBRARIES}
