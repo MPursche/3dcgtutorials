@@ -1,8 +1,18 @@
-#version 140 compatibilty
+#version 150 compatibility
 
-smooth in vec4 color;
+uniform sampler2D colorTexture;
+
+smooth in vec2 texCoord;
+smooth in vec3 normal;
+smooth in vec3 lightDir;
 
 void main()
 {
-	gl_FragColor = color;
+	vec3 fragNormal = normalize(normal);
+	fragNormal = gl_FrontFacing ? fragNormal : -1.0 * fragNormal;
+	float diffuseFactor = dot(fragNormal, normalize(lightDir));
+	vec4 textureColor = texture2D(colorTexture, texCoord);
+
+	gl_FragColor = vec4(textureColor.rgb * diffuseFactor +
+					textureColor.rgb * gl_LightSource[0].ambient.rgb, textureColor.a);
 }

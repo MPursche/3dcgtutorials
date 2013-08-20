@@ -23,6 +23,10 @@ set(sources
 set(shader
 	shader/instancing.vert
 	shader/instancing.frag
+	shader/no_instancing.vert
+	shader/no_instancing.frag
+	shader/texture_instancing.vert
+	shader/texture_instancing.frag
 )
 
 # Define data files
