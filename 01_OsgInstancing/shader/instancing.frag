@@ -10,7 +10,7 @@ void main()
 {
 	vec3 fragNormal = normalize(normal);
 	fragNormal = gl_FrontFacing ? fragNormal : -1.0 * fragNormal;
-	float diffuseFactor = dot(fragNormal, normalize(lightDir));
+	float diffuseFactor = clamp(dot(fragNormal, normalize(lightDir)), 0.0, 1.0);
 	vec4 textureColor = texture2D(colorTexture, texCoord);
 
 	gl_FragColor = vec4(textureColor.rgb * gl_LightSource[0].diffuse.rgb * diffuseFactor +

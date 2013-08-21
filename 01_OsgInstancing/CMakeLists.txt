@@ -22,6 +22,8 @@ set(sources
 	src/ComputeInstanceBoundingBoxCallback.cpp
 	src/ComputeTextureBoundingBoxCallback.h
 	src/ComputeTextureBoundingBoxCallback.cpp
+	src/ASCFileLoader.h
+	src/ASCFileLoader.cpp
 )
 
 # Define shader files

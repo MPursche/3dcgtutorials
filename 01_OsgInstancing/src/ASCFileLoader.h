@@ -21,37 +21,32 @@
 	CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-// osg
-#include <osg/Geometry>
+#ifndef _ASC_FILE_LOADER_H
+#define _ASC_FILE_LOADER_H
 
-#include "ComputeInstanceBoundingBoxCallback.h"
+#include <string>
 
 namespace osgExample
 {
 
-osg::BoundingBox ComputeInstancedBoundingBoxCallback::computeBound(const osg::Drawable& drawable) const
+class ASCFileLoader
 {
-	osg::BoundingBox bounds;
-	const osg::Geometry* geometry = dynamic_cast<const osg::Geometry*>(&drawable);
+public:
+	ASCFileLoader();
+	~ASCFileLoader();
 
-	if (!geometry)
-		return bounds;
+	void loadFromFile(const std::string& fileName);
+	float getNearestHeight(float x, float y) const;
 
-	const osg::Vec3Array* vertices = dynamic_cast<const osg::Vec3Array*>(geometry->getVertexArray());
+	inline unsigned int getWidth() const { return m_width; }
+	inline unsigned int getHeight() const { return m_height; }
 
-	for (unsigned int i = 0; i < m_instanceMatrices->getNumElements(); ++i)
-	{
-		osg::Matrixd matrix;
-		m_instanceMatrices->getElement(i, matrix);
-
-
-		for (auto it = vertices->begin(); it != vertices->end(); ++it)
-		{
-			bounds.expandBy(*it * matrix);
-		}
-	}
-
-	return bounds;
-}
+private:
+	float*			m_heightMap;
+	unsigned int	m_width;
+	unsigned int	m_height;
+};
 
 }
+
+#endif
