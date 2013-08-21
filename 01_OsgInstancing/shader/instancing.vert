@@ -9,7 +9,7 @@ smooth out vec3 lightDir;
 void main()
 {
 	mat4 _instanceModelMatrix = instanceModelMatrix[gl_InstanceID];
-	gl_Position = gl_ModelViewProjectionMatrix * _instanceModelMatrix *gl_Vertex;
+	gl_Position = gl_ModelViewProjectionMatrix * _instanceModelMatrix * gl_Vertex;
 	texCoord = gl_MultiTexCoord0.xy;
 
 	mat3 normalMatrix = mat3(_instanceModelMatrix[0][0], _instanceModelMatrix[0][1], _instanceModelMatrix[0][2],

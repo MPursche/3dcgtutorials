@@ -17,32 +17,6 @@ namespace osgExample
 class InstancedGeometryBuilder : public osg::Referenced
 {
 public:
-	class ComputeInstancedBoundingBoxCallback : public osg::Drawable::ComputeBoundingBoxCallback
-	{
-	public:
-		ComputeInstancedBoundingBoxCallback(osg::ref_ptr<osg::Uniform> instanceMatrices)
-			: m_instanceMatrices(instanceMatrices)
-		{
-		}
-
-		 virtual osg::BoundingBox computeBound(const osg::Drawable& drawable) const;
-	private:
-		osg::ref_ptr<osg::Uniform> m_instanceMatrices;
-	};
-
-	class ComputeTextureBoundingBoxCallback : public osg::Drawable::ComputeBoundingBoxCallback
-	{
-	public:
-		ComputeTextureBoundingBoxCallback(std::vector<osg::Matrixd> instanceMatrices)
-			: m_instanceMatrices(instanceMatrices)
-		{
-		}
-
-		 virtual osg::BoundingBox computeBound(const osg::Drawable& drawable) const;
-	private:
-		std::vector<osg::Matrixd> m_instanceMatrices;
-	};
-public:
 	InstancedGeometryBuilder()
 		:	m_maxMatrixUniforms(16),
 			m_maxTextureResolution(16384)

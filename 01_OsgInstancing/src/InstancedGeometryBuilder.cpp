@@ -9,54 +9,12 @@
 #include <osg/Image>
 #include <osg/TextureRectangle>
 
+// osgExample
+#include "ComputeInstanceBoundingBoxCallback.h"
+#include "ComputeTextureBoundingBoxCallback.h"
+
 namespace osgExample
 {
-
-osg::BoundingBox InstancedGeometryBuilder::ComputeInstancedBoundingBoxCallback::computeBound(const osg::Drawable& drawable) const
-{
-	osg::BoundingBox bounds;
-	const osg::Geometry* geometry = dynamic_cast<const osg::Geometry*>(&drawable);
-
-	if (!geometry)
-		return bounds;
-
-	const osg::Vec3Array* vertices = dynamic_cast<const osg::Vec3Array*>(geometry->getVertexArray());
-
-	for (unsigned int i = 0; i < m_instanceMatrices->getNumElements(); ++i)
-	{
-		osg::Matrixd matrix;
-		m_instanceMatrices->getElement(i, matrix);
-
-
-		for (auto it = vertices->begin(); it != vertices->end(); ++it)
-		{
-			bounds.expandBy(*it * matrix);
-		}
-	}
-
-	return bounds;
-}
-
-osg::BoundingBox InstancedGeometryBuilder::ComputeTextureBoundingBoxCallback::computeBound(const osg::Drawable& drawable) const
-{
-	osg::BoundingBox bounds;
-	const osg::Geometry* geometry = dynamic_cast<const osg::Geometry*>(&drawable);
-
-	if (!geometry)
-		return bounds;
-
-	const osg::Vec3Array* vertices = dynamic_cast<const osg::Vec3Array*>(geometry->getVertexArray());
-
-	for (unsigned int i = 0; i < m_instanceMatrices.size(); ++i)
-	{
-		for (auto it = vertices->begin(); it != vertices->end(); ++it)
-		{
-			bounds.expandBy(*it * m_instanceMatrices[i]);
-		}
-	}
-
-	return bounds;
-}
 
 osg::ref_ptr<osg::Node> InstancedGeometryBuilder::getSoftwareInstancedNode() const
 {
@@ -230,7 +188,11 @@ osg::ref_ptr<osg::Node> InstancedGeometryBuilder::createTextureHardwareInstanced
 
 	geode->getOrCreateStateSet()->setTextureAttributeAndModes(1, texture, osg::StateAttribute::ON);
 	geode->getOrCreateStateSet()->addUniform(new osg::Uniform("instanceMatrixTexture", 1));
-	geometry->setComputeBoundingBoxCallback(new ComputeTextureBoundingBoxCallback(m_matrices));
+
+	// copy part of matrix list and create bounding box callback
+	std::vector<osg::Matrixd> matrices;
+	matrices.insert(matrices.begin(), m_matrices.begin()+start, m_matrices.begin()+end);
+	geometry->setComputeBoundingBoxCallback(new ComputeTextureBoundingBoxCallback(matrices));
 
 	return geode;
 }

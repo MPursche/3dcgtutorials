@@ -3,6 +3,7 @@
 #include <cstdlib>
 #define _USE_MATH_DEFINES 1 // fix for visual studio
 #include <cmath>
+#include <iostream>
 
 // osg
 #include <osg/ref_ptr>
@@ -15,67 +16,12 @@
 #include <osgViewer/Viewer>
 #include <osgViewer/ViewerEventHandlers>
 #include <osgDB/ReadFile>
+#include <osg/Light>
+#include <osg/LightSource>
 
 // osgExample
 #include "InstancedGeometryBuilder.h"
-
-osg::ref_ptr<osg::Switch> setupScene(unsigned int x, unsigned int y, GLint maxInstanceMatrices);
-
-class SwitchInstancingHandler : public osgGA::GUIEventHandler
-{
-public:
-	SwitchInstancingHandler(osg::ref_ptr<osgViewer::Viewer> viewer, osg::ref_ptr<osg::Switch> switchNode, GLint maxInstanceMatrices)
-		:	m_viewer(viewer),
-			m_switch(switchNode),
-			m_size(50.f),
-			m_maxInstanceMatrices(maxInstanceMatrices)
-	{
-	}
-
-	virtual bool handle(const osgGA::GUIEventAdapter& ea, osgGA::GUIActionAdapter& aa)
-	{
-		if (ea.getEventType() == osgGA::GUIEventAdapter::KEYUP)
-		{
-			switch(ea.getKey())
-			{
-			case osgGA::GUIEventAdapter::KEY_1:
-				m_switch->setSingleChildOn(0);
-				return true;
-				break;
-			case osgGA::GUIEventAdapter::KEY_2:
-				m_switch->setSingleChildOn(1);
-				return true;
-				break;
-			case osgGA::GUIEventAdapter::KEY_3:
-				m_switch->setSingleChildOn(2);
-				return true;
-				break;
-			case osgGA::GUIEventAdapter::KEY_Plus:
-				m_size *= 2.0;
-				m_switch = setupScene((unsigned int)m_size, (unsigned int)m_size, m_maxInstanceMatrices);
-				m_viewer->setSceneData(m_switch);
-				return true;
-				break;
-			case osgGA::GUIEventAdapter::KEY_Minus:
-				m_size *= 0.5;
-				m_switch = setupScene((unsigned int)m_size, (unsigned int)m_size, m_maxInstanceMatrices);
-				m_viewer->setSceneData(m_switch);
-				return true;
-				break;
-			default:
-				break;
-			}
-
-		}
-
-		return false;
-	}
-private:
-	osg::ref_ptr<osg::Switch>		m_switch;
-	osg::ref_ptr<osgViewer::Viewer> m_viewer;
-	float m_size;
-	GLint m_maxInstanceMatrices;
-};
+#include "SwitchTechniqueHandler.h"
 
 GLint getMaxNumberOfUniforms(osg::GraphicsContext* context)
 {
@@ -178,10 +124,22 @@ osg::ref_ptr<osg::Switch> setupScene(unsigned int x, unsigned int y, GLint maxIn
 	texture->setFilter(osg::Texture::MAG_FILTER, osg::Texture::LINEAR_MIPMAP_LINEAR);
 	texture->setUseHardwareMipMapGeneration(true);
 
-	switchNode->getOrCreateStateSet()->setTextureAttributeAndModes(0, texture, osg::StateAttribute::ON);
-	switchNode->getOrCreateStateSet()->addUniform(new osg::Uniform("colorTexture", 0));
-	switchNode->getOrCreateStateSet()->setAttributeAndModes(new osg::AlphaFunc(osg::AlphaFunc::GEQUAL, 0.8f), osg::StateAttribute::ON);
+	osg::ref_ptr<osg::StateSet> stateSet = switchNode->getOrCreateStateSet();
+	stateSet->setTextureAttributeAndModes(0, texture, osg::StateAttribute::ON);
+	stateSet->addUniform(new osg::Uniform("colorTexture", 0));
+	stateSet->setAttributeAndModes(new osg::AlphaFunc(osg::AlphaFunc::GEQUAL, 0.8f), osg::StateAttribute::ON);
 
+	// add light source
+	osg::ref_ptr<osg::Light> light = new osg::Light(0);
+	light->setAmbient(osg::Vec4(0.2f, 0.2f, 0.2f, 1.0f));
+	light->setDiffuse(osg::Vec4(0.8f, 0.8f, 0.2f, 1.0f));
+	light->setPosition(osg::Vec4(-1.0f, -1.0f, -1.0f, 0.0f));
+	
+	osg::ref_ptr<osg::LightSource> lightSource = new osg::LightSource;
+	lightSource->setLight(light);
+
+	switchNode->addChild(lightSource);
+	
 	return switchNode;
 }
 
@@ -205,7 +163,7 @@ int main(int argc, char** argv)
 	unsigned int maxInstanceMatrices = (maxNumUniforms-64) / 16;
 
 	// create scene
-	osg::ref_ptr<osg::Switch> scene = setupScene(50, 50, maxInstanceMatrices);
+	osg::ref_ptr<osg::Switch> scene = setupScene(64, 64, maxInstanceMatrices);
 	viewer->setSceneData(scene);
 
 	 // add the state manipulator
@@ -213,7 +171,14 @@ int main(int argc, char** argv)
 
 	// add the stats handler
     viewer->addEventHandler(new osgViewer::StatsHandler);
-	viewer->addEventHandler(new SwitchInstancingHandler(viewer, scene, maxInstanceMatrices));
+	viewer->addEventHandler(new osgExample::SwitchInstancingHandler(viewer, scene, maxInstanceMatrices, setupScene));
+
+	// print usage
+	std::cout << "OpenSceneraph Instancing Example" << std::endl;
+	std::cout << "================================" << std::endl << std::endl;
+	std::cout << "Switch between instancing techniques: 1, 2, 3" << std::endl;
+	std::cout << "Increase/decrease scene complexety: +/-" << std::endl;
+	std::cout << "Cycle through different status informations(FPS and other stats): s" << std::endl;
 
 	return viewer->run();
 }

@@ -17,6 +17,11 @@ set(sources
     src/main.cpp
     src/InstancedGeometryBuilder.h
     src/InstancedGeometryBuilder.cpp
+	src/SwitchTechniqueHandler.h
+	src/ComputeInstanceBoundingBoxCallback.h
+	src/ComputeInstanceBoundingBoxCallback.cpp
+	src/ComputeTextureBoundingBoxCallback.h
+	src/ComputeTextureBoundingBoxCallback.cpp
 )
 
 # Define shader files
