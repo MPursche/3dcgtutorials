@@ -121,7 +121,7 @@ osg::ref_ptr<osg::Switch> setupScene(unsigned int x, unsigned int y, GLint maxIn
 	osg::ref_ptr<osgExample::InstancedGeometryBuilder> builder = new osgExample::InstancedGeometryBuilder(maxInstanceMatrices);
 	builder->setGeometry(createQuads());
 	
-	osg::Vec2 blockSize(g_fileLoader.getWidth() / x, g_fileLoader.getHeight() / y);
+	osg::Vec2 blockSize((float)g_fileLoader.getWidth() / (float)x, (float)g_fileLoader.getHeight() / (float)y);
 	osg::Vec3 scale(2.0f, 2.0f, 1.0f);
 
 	// create some matrices
@@ -147,7 +147,6 @@ osg::ref_ptr<osg::Switch> setupScene(unsigned int x, unsigned int y, GLint maxIn
 		}
 	}
 	
-	osg::ref_ptr<osg::Geode> hardwareInstancing = new osg::Geode;
 	switchNode->addChild(builder->getSoftwareInstancedNode(), false);
 	switchNode->addChild(builder->getHardwareInstancedNode(), false);
 	switchNode->addChild(builder->getTextureHardwareInstancedNode(), true);

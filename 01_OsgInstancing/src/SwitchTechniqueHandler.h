@@ -75,7 +75,7 @@ public:
 				break;
 			case osgGA::GUIEventAdapter::KEY_Plus:
 				m_size *= 2.0f;
-				m_size = std::min(std::max(m_size, 8.0f), 512.0f);
+				m_size = std::min(std::max(m_size, 8.0f), 1024.0f);
 				m_switch = m_setupScene((unsigned int)m_size, (unsigned int)m_size, m_maxInstanceMatrices);
 				m_viewer->setSceneData(m_switch);
 				std::cout << "Increased scene size to " << m_size << "x" << m_size << std::endl;
@@ -83,7 +83,7 @@ public:
 				break;
 			case osgGA::GUIEventAdapter::KEY_Minus:
 				m_size *= 0.5f;
-				m_size = std::min(std::max(m_size, 8.0f), 512.0f);
+				m_size = std::min(std::max(m_size, 8.0f), 1024.0f);
 				m_switch = m_setupScene((unsigned int)m_size, (unsigned int)m_size, m_maxInstanceMatrices);
 				m_viewer->setSceneData(m_switch);
 				std::cout << "Decreased scene size to " << m_size << "x" << m_size << std::endl;
