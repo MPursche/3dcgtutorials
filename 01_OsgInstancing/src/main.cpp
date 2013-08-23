@@ -51,6 +51,8 @@ osgExample::ASCFileLoader g_fileLoader;
 
 GLint getMaxNumberOfUniforms(osg::GraphicsContext* context)
 {
+// ATI driver 11.6 didn't return right number of uniforms which lead to a crash, when the vertex shader was compiled(WTF?!)
+#ifndef ATI_FIX
 	context->realize();
 	context->makeCurrent();
 	GLint maxNumUniforms = 0;
@@ -58,6 +60,9 @@ GLint getMaxNumberOfUniforms(osg::GraphicsContext* context)
 	context->releaseContext();
 
 	return maxNumUniforms;
+#else
+	return 576;
+#endif
 }
 
 osg::ref_ptr<osg::Geometry> createQuads()

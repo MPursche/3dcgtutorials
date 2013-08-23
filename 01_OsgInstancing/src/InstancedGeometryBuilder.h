@@ -63,8 +63,9 @@ public:
 	osg::ref_ptr<osg::Node> getTextureHardwareInstancedNode() const;
 
 private:
-	osg::ref_ptr<osg::Node> createHardwareInstancedGeode(unsigned int start, unsigned int end) const;
-	osg::ref_ptr<osg::Node> createTextureHardwareInstancedGeode(unsigned int start, unsigned int end) const;
+	osg::ref_ptr<osg::Node>   createHardwareInstancedGeode(unsigned int start, unsigned int end) const;
+	osg::ref_ptr<osg::Node>   createTextureHardwareInstancedGeode(unsigned int start, unsigned int end) const;
+	osg::ref_ptr<osg::Shader> readShaderFile(const std::string& fileName, const std::string& preprocessorDefinitions) const;
 
 	GLint						m_maxMatrixUniforms;
 	unsigned int				m_maxTextureResolution;

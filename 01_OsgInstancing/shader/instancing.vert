@@ -1,5 +1,4 @@
 #version 150 compatibility
-#define MAX_INSTANCES 252
 uniform mat4 instanceModelMatrix[MAX_INSTANCES];
 
 smooth out vec2 texCoord;

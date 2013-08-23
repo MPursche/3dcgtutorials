@@ -58,3 +58,10 @@ install(TARGETS ${target}
 	PUBLIC_HEADER DESTINATION include CONFIGURATIONS)
 install(FILES ${shader} DESTINATION shader)
 install(FILES ${data} DESTINATION data)
+
+# Setup Option to activate ATI Bugfix
+option(ATI_FIX "Fixes a bug that occured with Catalyst 11.6(don't now about newer versions, so try yourself)" false)
+
+if(ATI_FIX)
+	add_definitions(-DATI_FIX)
+endif(ATI_FIX)

@@ -92,7 +92,10 @@ osg::ref_ptr<osg::Node> InstancedGeometryBuilder::getHardwareInstancedNode() con
 	}
 
 	osg::ref_ptr<osg::Program> program = new osg::Program;
-	osg::ref_ptr<osg::Shader> vsShader = osgDB::readShaderFile("shader/instancing.vert");
+		
+	std::stringstream preprocessorDefinition;
+	preprocessorDefinition << "#define MAX_INSTANCES " << m_maxMatrixUniforms;
+	osg::ref_ptr<osg::Shader> vsShader = readShaderFile("shader/instancing.vert", preprocessorDefinition.str());
 	osg::ref_ptr<osg::Shader> fsShader = osgDB::readShaderFile("shader/instancing.frag");
 	program->addShader(vsShader);
 	program->addShader(fsShader);
@@ -218,6 +221,25 @@ osg::ref_ptr<osg::Node> InstancedGeometryBuilder::createTextureHardwareInstanced
 	geometry->setComputeBoundingBoxCallback(new ComputeTextureBoundingBoxCallback(matrices));
 
 	return geode;
+}
+
+osg::ref_ptr<osg::Shader> InstancedGeometryBuilder::readShaderFile(const std::string& fileName, const std::string& preprocessorDefinitions) const
+{
+	// open vertex shader file
+	std::ifstream vsShaderFile;
+	vsShaderFile.open("shader/instancing.vert", std::ios_base::in);
+	std::stringstream vsShaderStr;
+	std::string line;
+	std::getline(vsShaderFile, line);
+	vsShaderStr << line << std::endl;
+	vsShaderStr << preprocessorDefinitions << std::endl;
+	while (!vsShaderFile.eof()) {
+		std::getline(vsShaderFile, line);
+		vsShaderStr << line << std::endl;
+	}
+	vsShaderFile.close();
+
+	return new osg::Shader(osg::Shader::VERTEX, vsShaderStr.str());
 }
 
 }

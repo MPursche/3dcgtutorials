@@ -25,7 +25,7 @@
 
 // std
 #include <iostream>
-#include <fstream>
+#include <osgDB/fstream>
 #include <cmath>
 
 namespace osgExample
