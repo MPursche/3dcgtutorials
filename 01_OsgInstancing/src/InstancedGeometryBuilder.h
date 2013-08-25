@@ -42,13 +42,13 @@ class InstancedGeometryBuilder : public osg::Referenced
 public:
 	InstancedGeometryBuilder()
 		:	m_maxMatrixUniforms(16),
-			m_maxTextureResolution(16384)
+			m_maxTextureResolution(16384u * 4096u)
 	{
 	}
 	
 	InstancedGeometryBuilder(GLint maxMatrixUniforms)
 		:	m_maxMatrixUniforms(maxMatrixUniforms),
-			m_maxTextureResolution(16384)
+			m_maxTextureResolution(16384u * 4096u)
 	{
 	}
 	

@@ -191,14 +191,15 @@ osg::ref_ptr<osg::Node> InstancedGeometryBuilder::createTextureHardwareInstanced
 	geometry->setUseVertexBufferObjects(true);
 	
 	// create texture to encode all matrices
+	unsigned int height = ((end-start) / 4096u);
 	osg::ref_ptr<osg::Image> image = new osg::Image;
-	image->allocateImage(4, end-start, 1, GL_RGBA, GL_FLOAT);
+	image->allocateImage(16384, height, 1, GL_RGBA, GL_FLOAT);
 	image->setInternalTextureFormat(GL_RGBA32F_ARB);
 
 	for (unsigned int i = start, j = 0; i < end; ++i, ++j)
 	{
 		osg::Matrixf matrix = m_matrices[i];
-		float * data = (float*)image->data(0, j);
+		float * data = (float*)image->data((j % 4096u) *4u, j / 4096u);
 		memcpy(data, matrix.ptr(), 16 * sizeof(float));
 	}
 
