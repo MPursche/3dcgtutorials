@@ -191,7 +191,7 @@ osg::ref_ptr<osg::Node> InstancedGeometryBuilder::createTextureHardwareInstanced
 	geometry->setUseVertexBufferObjects(true);
 	
 	// create texture to encode all matrices
-	unsigned int height = ((end-start) / 4096u);
+	unsigned int height = ((end-start) / 4096u) + 1u;
 	osg::ref_ptr<osg::Image> image = new osg::Image;
 	image->allocateImage(16384, height, 1, GL_RGBA, GL_FLOAT);
 	image->setInternalTextureFormat(GL_RGBA32F_ARB);
