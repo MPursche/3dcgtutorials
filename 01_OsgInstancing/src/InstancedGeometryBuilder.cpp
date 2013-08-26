@@ -58,8 +58,8 @@ osg::ref_ptr<osg::Node> InstancedGeometryBuilder::getSoftwareInstancedNode() con
 	}
 
 	osg::ref_ptr<osg::Program> program = new osg::Program;
-	osg::ref_ptr<osg::Shader> vsShader = osgDB::readShaderFile("shader/no_instancing.vert");
-	osg::ref_ptr<osg::Shader> fsShader = osgDB::readShaderFile("shader/no_instancing.frag");
+	osg::ref_ptr<osg::Shader> vsShader = osgDB::readShaderFile("../shader/no_instancing.vert");
+	osg::ref_ptr<osg::Shader> fsShader = osgDB::readShaderFile("../shader/no_instancing.frag");
 	program->addShader(vsShader);
 	program->addShader(fsShader);
 
@@ -95,8 +95,8 @@ osg::ref_ptr<osg::Node> InstancedGeometryBuilder::getHardwareInstancedNode() con
 		
 	std::stringstream preprocessorDefinition;
 	preprocessorDefinition << "#define MAX_INSTANCES " << m_maxMatrixUniforms;
-	osg::ref_ptr<osg::Shader> vsShader = readShaderFile("shader/instancing.vert", preprocessorDefinition.str());
-	osg::ref_ptr<osg::Shader> fsShader = osgDB::readShaderFile("shader/instancing.frag");
+	osg::ref_ptr<osg::Shader> vsShader = readShaderFile("../shader/instancing.vert", preprocessorDefinition.str());
+	osg::ref_ptr<osg::Shader> fsShader = osgDB::readShaderFile("../shader/instancing.frag");
 	program->addShader(vsShader);
 	program->addShader(fsShader);
 
@@ -131,8 +131,8 @@ osg::ref_ptr<osg::Node> InstancedGeometryBuilder::getTextureHardwareInstancedNod
 	
 	// add shaders
 	osg::ref_ptr<osg::Program> program = new osg::Program;
-	osg::ref_ptr<osg::Shader> vsShader = osgDB::readShaderFile("shader/texture_instancing.vert");
-	osg::ref_ptr<osg::Shader> fsShader = osgDB::readShaderFile("shader/texture_instancing.frag");
+	osg::ref_ptr<osg::Shader> vsShader = osgDB::readShaderFile("../shader/texture_instancing.vert");
+	osg::ref_ptr<osg::Shader> fsShader = osgDB::readShaderFile("../shader/texture_instancing.frag");
 	program->addShader(vsShader);
 	program->addShader(fsShader);
 
@@ -228,7 +228,13 @@ osg::ref_ptr<osg::Shader> InstancedGeometryBuilder::readShaderFile(const std::st
 {
 	// open vertex shader file
 	std::ifstream vsShaderFile;
-	vsShaderFile.open("shader/instancing.vert", std::ios_base::in);
+	vsShaderFile.open(fileName, std::ios_base::in);
+
+	if(!vsShaderFile.is_open()) {
+		std::cout << "Error: Could not open shader file " << fileName << std::endl;
+		return NULL;
+	}
+
 	std::stringstream vsShaderStr;
 	std::string line;
 	std::getline(vsShaderFile, line);

@@ -157,7 +157,7 @@ osg::ref_ptr<osg::Switch> setupScene(unsigned int x, unsigned int y, GLint maxIn
 	switchNode->addChild(builder->getTextureHardwareInstancedNode(), true);
 
 	// load texture and add it to the quad
-	osg::ref_ptr<osg::Image> image = osgDB::readImageFile("data/grass.png");
+	osg::ref_ptr<osg::Image> image = osgDB::readImageFile("../data/grass.png");
 	osg::ref_ptr<osg::Texture2D> texture = new osg::Texture2D(image);
 	texture->setWrap(osg::Texture::WRAP_S, osg::Texture::CLAMP_TO_EDGE);
 	texture->setWrap(osg::Texture::WRAP_T, osg::Texture::CLAMP_TO_EDGE);
@@ -204,7 +204,7 @@ int main(int argc, char** argv)
 	unsigned int maxInstanceMatrices = (maxNumUniforms-64) / 16;
 
 	// load elevation model from asc
-	g_fileLoader.loadFromFile("data/crater.asc");
+	g_fileLoader.loadFromFile("../data/crater.asc");
 
 	// create scene
 	osg::ref_ptr<osg::Switch> scene = setupScene(64, 64, maxInstanceMatrices);
