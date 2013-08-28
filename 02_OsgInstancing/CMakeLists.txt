@@ -70,7 +70,7 @@ if(ATI_FIX)
 	add_definitions(-DATI_FIX)
 endif(ATI_FIX)
 
+# for linux compatibility
 if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_COMPILER_IS_GNUCC)
-  #add_definitions(-std=c++0x)
   SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++0x")
 endif(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_COMPILER_IS_GNUCC)

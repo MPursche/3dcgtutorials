@@ -23,6 +23,9 @@
 
 #include "InstancedGeometryBuilder.h"
 
+// std
+#include <cstring>
+
 // osg
 #include <osg/Uniform>
 #include <osg/Group>

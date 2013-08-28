@@ -67,3 +67,8 @@ option(ATI_FIX "Fixes a bug that occured with Catalyst 11.6(don't now about newe
 if(ATI_FIX)
 	add_definitions(-DATI_FIX)
 endif(ATI_FIX)
+
+# for linux compatibility
+if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_COMPILER_IS_GNUCC)
+	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++0x")
+endif(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_COMPILER_IS_GNUCC)
