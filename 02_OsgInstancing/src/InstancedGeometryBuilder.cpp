@@ -23,6 +23,9 @@
 
 #include "InstancedGeometryBuilder.h"
 
+// std
+#include <cstring>
+
 // osg
 #include <osg/Uniform>
 #include <osg/Group>
@@ -316,7 +319,7 @@ osg::ref_ptr<osg::Shader> InstancedGeometryBuilder::readShaderFile(const std::st
 {
 	// open vertex shader file
 	std::ifstream vsShaderFile;
-	vsShaderFile.open(fileName, std::ios_base::in);
+    vsShaderFile.open(fileName.c_str(), std::ios_base::in);
 
 	if(!vsShaderFile.is_open()) {
 		std::cout << "Error: Could not open shader file " << fileName << std::endl;

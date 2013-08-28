@@ -49,7 +49,7 @@ void ASCFileLoader::loadFromFile(const std::string& fileName)
 	std::ifstream fileStream;
 	try
 	{
-		fileStream.open(fileName, std::ios::in);
+        fileStream.open(fileName.c_str(), std::ios::in);
 
 		// first we try to parse width and height
 		m_width = 0u;
