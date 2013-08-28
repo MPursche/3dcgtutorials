@@ -5,11 +5,13 @@ project(OsgInstancing)
 # Set target name
 set(target OsgInstancing)
 
+find_package(OpenGL REQUIRED)
 find_package(OpenSceneGraph REQUIRED osgViewer osgGA osgDB osgUtil)
 
 # Set include directories
 include_directories(
     ${OPENSCENEGRAPH_INCLUDE_DIRS}
+	${OPENGL_INCLUDE_DIR}
 )
 
 # Define source files
@@ -49,7 +51,7 @@ add_executable(${target} ${sources} ${shader})
 
 target_link_libraries(${target}
     ${OPENSCENEGRAPH_LIBRARIES}
-    opengl32.lib    
+    ${OPENGL_LIBRARIES}    
 )
 
 # Setup Install Target

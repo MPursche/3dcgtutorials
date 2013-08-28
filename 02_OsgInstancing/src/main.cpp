@@ -63,7 +63,7 @@ void getMaxNumberOfUniforms(osg::GraphicsContext* context, GLint& maxNumUniforms
 	context->releaseContext();
 #else
 	maxNumUniforms      = 576;
-	maxUniformBlockSize = 16384; 
+	maxUniformBlockSize = 16384;
 #endif
 }
 
