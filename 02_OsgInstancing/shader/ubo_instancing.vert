@@ -6,6 +6,7 @@ layout(std140) uniform instanceData
 };
 uniform mat4 osg_ModelViewProjectionMatrix;
 uniform mat3 osg_NormalMatrix;
+uniform vec3 lightDirection;
 
 smooth out vec2 texCoord;
 smooth out vec3 normal;
@@ -22,5 +23,5 @@ void main()
 							 _instanceModelMatrix[2][0], _instanceModelMatrix[2][1], _instanceModelMatrix[2][2]);
 
 	normal = osg_NormalMatrix * normalMatrix * gl_Normal;
-	lightDir = gl_LightSource[0].position.xyz;
+	lightDir = lightDirection;
 }

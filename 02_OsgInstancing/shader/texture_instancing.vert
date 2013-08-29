@@ -3,6 +3,7 @@
 uniform sampler2DRect instanceMatrixTexture;
 uniform mat4 osg_ModelViewProjectionMatrix;
 uniform mat3 osg_NormalMatrix;
+uniform vec3 lightDirection;
 
 smooth out vec2 texCoord;
 smooth out vec3 normal;
@@ -24,5 +25,5 @@ void main()
 							 instanceModelMatrix[2][0], instanceModelMatrix[2][1], instanceModelMatrix[2][2]);
 
 	normal = osg_NormalMatrix * normalMatrix * gl_Normal;
-	lightDir = gl_LightSource[0].position.xyz;
+	lightDir = lightDirection;
 }
