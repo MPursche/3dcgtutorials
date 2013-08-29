@@ -6,12 +6,14 @@ project(OsgInstancing)
 set(target OsgInstancing)
 
 find_package(OpenGL REQUIRED)
+find_package(GLEW REQUIRED)
 find_package(OpenSceneGraph REQUIRED osgViewer osgGA osgDB osgUtil)
 
 # Set include directories
 include_directories(
     ${OPENSCENEGRAPH_INCLUDE_DIRS}
 	${OPENGL_INCLUDE_DIR}
+	${GLEW_INCLUDE_DIR}
 )
 
 # Define source files
@@ -26,6 +28,8 @@ set(sources
 	src/ComputeTextureBoundingBoxCallback.cpp
 	src/ASCFileLoader.h
 	src/ASCFileLoader.cpp
+	src/InstancedDrawable.h
+	src/InstancedDrawable.cpp
 )
 
 # Define shader files
@@ -52,6 +56,7 @@ add_executable(${target} ${sources} ${shader})
 target_link_libraries(${target}
     ${OPENSCENEGRAPH_LIBRARIES}
     ${OPENGL_LIBRARIES}    
+	${GLEW_LIBRARY}
 )
 
 # Setup Install Target
