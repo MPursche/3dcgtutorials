@@ -65,6 +65,7 @@ public:
 	osg::ref_ptr<osg::Node> getHardwareInstancedNode() const;
 	osg::ref_ptr<osg::Node> getTextureHardwareInstancedNode() const;
 	osg::ref_ptr<osg::Node> getUBOHardwareInstancedNode() const;
+	osg::ref_ptr<osg::Node> getVertexAttribHardwareInstancedNode() const;
 
 private:
 	osg::ref_ptr<osg::Node>   createHardwareInstancedGeode(unsigned int start, unsigned int end) const;

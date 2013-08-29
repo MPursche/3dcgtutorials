@@ -1,5 +1,7 @@
 #version 150 compatibility
 
+uniform vec4 ambientLightColor;
+uniform vec4 diffuseLightColor;
 uniform sampler2D colorTexture;
 
 smooth in vec2 texCoord;
@@ -13,6 +15,6 @@ void main()
 	float diffuseFactor = clamp(dot(fragNormal, normalize(lightDir)), 0.0, 1.0);
 	vec4 textureColor = texture2D(colorTexture, texCoord);
 
-	gl_FragColor = vec4(textureColor.rgb * gl_LightSource[0].diffuse.rgb * diffuseFactor +
-						textureColor.rgb * gl_LightSource[0].ambient.rgb, textureColor.a);
+	gl_FragColor = vec4(textureColor.rgb * diffuseLightColor.rgb * diffuseFactor +
+						textureColor.rgb * ambientLightColor.rgb, textureColor.a);
 }

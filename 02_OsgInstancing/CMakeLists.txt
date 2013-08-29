@@ -30,6 +30,8 @@ set(sources
 	src/ASCFileLoader.cpp
 	src/InstancedDrawable.h
 	src/InstancedDrawable.cpp
+	src/LightUniformUpdateCallback.h
+	src/MatrixUniformUpdateCallback.h
 )
 
 # Define shader files
@@ -42,6 +44,8 @@ set(shader
 	shader/texture_instancing.frag
 	shader/ubo_instancing.vert
 	shader/ubo_instancing.frag
+	shader/attribute_instancing.vert
+	shader/attribute_instancing.frag
 )
 
 # Define data files

@@ -38,14 +38,12 @@ namespace osgExample {
 class SwitchInstancingHandler : public osgGA::GUIEventHandler
 {
 public:
-	typedef osg::ref_ptr<osg::Switch> (*SetupSceneFuncPtr)(unsigned int, unsigned int, GLint, GLint);
+	typedef osg::ref_ptr<osg::Switch> (*SetupSceneFuncPtr)(unsigned int, unsigned int);
 
-	SwitchInstancingHandler(osg::ref_ptr<osgViewer::Viewer> viewer, osg::ref_ptr<osg::Switch> switchNode, GLint maxInstanceMatrices, GLint maxUniformBlockSize, SetupSceneFuncPtr setupScene)
+	SwitchInstancingHandler(osg::ref_ptr<osgViewer::Viewer> viewer, osg::ref_ptr<osg::Switch> switchNode, SetupSceneFuncPtr setupScene)
 		:	m_viewer(viewer),
 			m_switch(switchNode),
 			m_size(64.0f),
-			m_maxInstanceMatrices(maxInstanceMatrices),
-			m_maxUniformBlockSize(maxUniformBlockSize),
 			m_setupScene(setupScene)
 	{
 	}
@@ -58,32 +56,38 @@ public:
 			{
 			case osgGA::GUIEventAdapter::KEY_1:
 				m_switch->setSingleChildOn(0);
-				m_switch->setValue(4, true);
+				m_switch->setValue(5, true);
 				std::cout << "Switched to software instancing" << std::endl;
 				return true;
 				break;
 			case osgGA::GUIEventAdapter::KEY_2:
 				m_switch->setSingleChildOn(1);
-				m_switch->setValue(4, true);
+				m_switch->setValue(5, true);
 				std::cout << "Switched to hardware instancing with uniforms" << std::endl;
 				return true;
 				break;
 			case osgGA::GUIEventAdapter::KEY_3:
 				m_switch->setSingleChildOn(2);
-				m_switch->setValue(4, true);
+				m_switch->setValue(5, true);
 				std::cout << "Switched to hardware instancing with textures" << std::endl;
 				return true;
 				break;
 			case osgGA::GUIEventAdapter::KEY_4:
 				m_switch->setSingleChildOn(3);
-				m_switch->setValue(4, true);
+				m_switch->setValue(5, true);
 				std::cout << "Switched to hardware instancing with uniform buffer objects" << std::endl;
+				return true;
+				break;
+			case osgGA::GUIEventAdapter::KEY_5:
+				m_switch->setSingleChildOn(4);
+				m_switch->setValue(5, true);
+				std::cout << "Switched to hardware instancing with vertex attribute divisor" << std::endl;
 				return true;
 				break;
 			case osgGA::GUIEventAdapter::KEY_Plus:
 				m_size *= 2.0f;
 				m_size = std::min(std::max(m_size, 8.0f), 1024.0f);
-				m_switch = m_setupScene((unsigned int)m_size, (unsigned int)m_size, m_maxInstanceMatrices, m_maxUniformBlockSize);
+				m_switch = m_setupScene((unsigned int)m_size, (unsigned int)m_size);
 				m_viewer->setSceneData(m_switch);
 				std::cout << "Increased scene size to " << m_size << "x" << m_size << std::endl;
 				return true;
@@ -91,7 +95,7 @@ public:
 			case osgGA::GUIEventAdapter::KEY_Minus:
 				m_size *= 0.5f;
 				m_size = std::min(std::max(m_size, 8.0f), 1024.0f);
-				m_switch = m_setupScene((unsigned int)m_size, (unsigned int)m_size, m_maxInstanceMatrices, m_maxUniformBlockSize);
+				m_switch = m_setupScene((unsigned int)m_size, (unsigned int)m_size);
 				m_viewer->setSceneData(m_switch);
 				std::cout << "Decreased scene size to " << m_size << "x" << m_size << std::endl;
 				return true;
@@ -108,8 +112,6 @@ private:
 	osg::ref_ptr<osg::Switch>		m_switch;
 	osg::ref_ptr<osgViewer::Viewer> m_viewer;
 	float							m_size;
-	GLint							m_maxInstanceMatrices;
-	GLint							m_maxUniformBlockSize;
 
 	SetupSceneFuncPtr				m_setupScene;
 };

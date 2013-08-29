@@ -56,6 +56,9 @@ private:
 	mutable GLuint						m_instancebo;
 	mutable GLuint						m_ebo;
 
+	osg::ref_ptr<osg::Uniform> m_modelViewProjectionMatrix;
+	osg::ref_ptr<osg::Uniform> m_normalMatrix;
+
 	osg::ref_ptr<osg::Vec3Array>		m_vertexArray;
 	std::vector<osg::Matrixd>			m_matrixArray;
 	osg::ref_ptr<osg::Vec3Array>		m_normalArray;

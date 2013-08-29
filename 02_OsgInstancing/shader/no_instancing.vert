@@ -8,6 +8,6 @@ void main()
 {
 	gl_Position = gl_ModelViewProjectionMatrix *gl_Vertex;
 	texCoord = gl_MultiTexCoord0.xy;
-	normal = gl_NormalMatrix * gl_Normal;
+	normal   = gl_NormalMatrix * gl_Normal;
 	lightDir = gl_LightSource[0].position.xyz;
 }
