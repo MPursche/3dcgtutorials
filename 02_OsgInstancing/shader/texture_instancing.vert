@@ -1,6 +1,8 @@
 #version 150 compatibility
 #extension GL_ARB_texture_rectangle : enable
 uniform sampler2DRect instanceMatrixTexture;
+uniform mat4 osg_ModelViewProjectionMatrix;
+uniform mat3 osg_NormalMatrix;
 
 smooth out vec2 texCoord;
 smooth out vec3 normal;
@@ -14,13 +16,13 @@ void main()
 									texture2DRect(instanceMatrixTexture, instanceCoord + vec2(2.0, 0.0)),
 									texture2DRect(instanceMatrixTexture, instanceCoord + vec2(3.0, 0.0)));
 
-	gl_Position = gl_ModelViewProjectionMatrix * instanceModelMatrix * gl_Vertex;
+	gl_Position = osg_ModelViewProjectionMatrix * instanceModelMatrix * gl_Vertex;
 	texCoord = gl_MultiTexCoord0.xy;
 
 	mat3 normalMatrix = mat3(instanceModelMatrix[0][0], instanceModelMatrix[0][1], instanceModelMatrix[0][2],
 							 instanceModelMatrix[1][0], instanceModelMatrix[1][1], instanceModelMatrix[1][2],
 							 instanceModelMatrix[2][0], instanceModelMatrix[2][1], instanceModelMatrix[2][2]);
 
-	normal = gl_NormalMatrix * normalMatrix * gl_Normal;
+	normal = osg_NormalMatrix * normalMatrix * gl_Normal;
 	lightDir = gl_LightSource[0].position.xyz;
 }

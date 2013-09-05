@@ -49,15 +49,14 @@
 #include "InstancedGeometryBuilder.h"
 #include "SwitchTechniqueHandler.h"
 #include "ASCFileLoader.h"
-#include "InstancedDrawable.h"
+#include "LightUniformUpdateCallback.h"
 
 osgExample::ASCFileLoader g_fileLoader;
 osg::ref_ptr<osgExample::InstancedGeometryBuilder> g_builder;
 
 void getMaxNumberOfUniforms(osg::GraphicsContext* context, GLint& maxNumUniforms, GLint& maxUniformBlockSize)
 {
-// ATI driver 11.6 didn't return right number of uniforms which lead to a crash, when the vertex shader was compiled(WTF?!)
-#ifndef ATI_FIX
+
 	context->realize();
 	context->makeCurrent();
 	maxNumUniforms = 0;
@@ -68,13 +67,15 @@ void getMaxNumberOfUniforms(osg::GraphicsContext* context, GLint& maxNumUniforms
 	// init glew
 	glewInit();
 	context->releaseContext();
-#else
+
+	// ATI driver 11.6 didn't return right number of uniforms which lead to a crash, when the vertex shader was compiled(WTF?!)
+#ifdef ATI_FIX
 	maxNumUniforms      = 576;
 	maxUniformBlockSize = 16384;
 #endif
 }
 
-osg::ref_ptr<osg::Geometry> createQuads(osgExample::InstancedDrawable*& drawable)
+osg::ref_ptr<osg::Geometry> createQuads()
 {
 	// create two quads as geometry
 	osg::ref_ptr<osg::Vec3Array>	vertexArray = new osg::Vec3Array;
@@ -123,26 +124,16 @@ osg::ref_ptr<osg::Geometry> createQuads(osgExample::InstancedDrawable*& drawable
 	geometry->setNormalBinding(osg::Geometry::BIND_PER_VERTEX);
 	geometry->setTexCoordArray(0, texCoords);
 	geometry->addPrimitiveSet(primitive);
-
-	drawable = new osgExample::InstancedDrawable;
-	drawable->setVertexArray(vertexArray);
-	drawable->setNormalArray(normalArray);
-	drawable->setTexCoordArray(texCoords);
-
-	osg::ref_ptr<osg::DrawElementsUByte> instancedPrimitive = dynamic_cast<osg::DrawElementsUByte*>(primitive->clone(osg::CopyOp::DEEP_COPY_ALL));
-	instancedPrimitive->setNumInstances(512 * 512);
-	drawable->setDrawElements(instancedPrimitive);
-
+		
 	return geometry;
 }
 
-osg::ref_ptr<osg::Switch> setupScene(unsigned int x, unsigned int y, GLint maxInstanceMatrices, GLint maxUniformBlockSize)
+osg::ref_ptr<osg::Switch> setupScene(unsigned int x, unsigned int y)
 {
 	osg::ref_ptr<osg::Switch>	switchNode = new osg::Switch;
 
 	// setup the instanced geometry builder
-	osgExample::InstancedDrawable* drawable;
-	g_builder->setGeometry(createQuads(drawable));
+	g_builder->setGeometry(createQuads());
 	
 	osg::Vec2 blockSize((float)g_fileLoader.getWidth() / (float)x, (float)g_fileLoader.getHeight() / (float)y);
 	osg::Vec3 scale(2.0f, 2.0f, 1.0f);
@@ -177,22 +168,7 @@ osg::ref_ptr<osg::Switch> setupScene(unsigned int x, unsigned int y, GLint maxIn
 	switchNode->addChild(g_builder->getHardwareInstancedNode(), false);
 	switchNode->addChild(g_builder->getTextureHardwareInstancedNode(), false);
 	switchNode->addChild(g_builder->getUBOHardwareInstancedNode(), false);
-	
-	//
-	osg::ref_ptr<osg::Geode> geode = new osg::Geode;
-	drawable->setMatrixArray(matrices);
-	geode->addDrawable(drawable);
-	switchNode->addChild(geode);
-	osg::ref_ptr<osg::Program> program = new osg::Program;
-	osg::ref_ptr<osg::Shader> vsShader = osgDB::readShaderFile("../shader/attribute_instancing.vert");
-	osg::ref_ptr<osg::Shader> fsShader = osgDB::readShaderFile("../shader/attribute_instancing.frag");
-	program->addShader(vsShader);
-	program->addShader(fsShader);
-	program->addBindAttribLocation("vPosition", 0);
-	program->addBindAttribLocation("vNormal", 1);
-	program->addBindAttribLocation("vTexCoord", 2);
-	program->addBindAttribLocation("vInstanceModelMatrix", 3);
-	geode->getOrCreateStateSet()->setAttributeAndModes(program, osg::StateAttribute::ON);
+	switchNode->addChild(g_builder->getVertexAttribHardwareInstancedNode(), true);
 
 	// load texture and add it to the quad
 	osg::ref_ptr<osg::Image> image = osgDB::readImageFile("../data/grass.png");
@@ -216,9 +192,15 @@ osg::ref_ptr<osg::Switch> setupScene(unsigned int x, unsigned int y, GLint maxIn
 	
 	osg::ref_ptr<osg::LightSource> lightSource = new osg::LightSource;
 	lightSource->setLight(light);
-
 	switchNode->addChild(lightSource);
-	
+
+	// create uniforms for attribute instancing shader
+	stateSet->addUniform(new osg::Uniform("diffuseLightColor", light->getDiffuse()));
+	stateSet->addUniform(new osg::Uniform("ambientLightColor", light->getAmbient()));
+	osg::ref_ptr<osg::Uniform> lightDirection = new osg::Uniform("lightDirection", osg::Vec3(-1.0f, -1.0f, -1.0f));
+	stateSet->addUniform(lightDirection);
+	lightSource->addCullCallback(new osgExample::LightUniformUpdateCallback(lightDirection));
+
 	return switchNode;
 }
 
@@ -239,6 +221,7 @@ int main(int argc, char** argv)
 	GLint maxNumUniforms = 0;
 	GLint maxUniformBlockSize = 0;
 	getMaxNumberOfUniforms(contexts[0], maxNumUniforms, maxUniformBlockSize);
+	//contexts[0]->getState()->setUseModelViewAndProjectionUniforms(true);
 
 	// we need to reserve some space for modelViewMatrix, projectionMatrix, modelViewProjectionMatrix and normalMatrix, we also need 16 float uniforms per matrix
 	unsigned int maxInstanceMatrices = (maxNumUniforms-64) / 16;
@@ -248,7 +231,7 @@ int main(int argc, char** argv)
 
 	// create scene
 	g_builder = new osgExample::InstancedGeometryBuilder(maxInstanceMatrices, maxUniformBlockSize);
-	osg::ref_ptr<osg::Switch> scene = setupScene(512, 512, maxInstanceMatrices, maxUniformBlockSize);
+	osg::ref_ptr<osg::Switch> scene = setupScene(64, 64);
 	viewer->setSceneData(scene);
 
 	 // add the state manipulator
@@ -256,7 +239,7 @@ int main(int argc, char** argv)
 
 	// add the stats handler
     viewer->addEventHandler(new osgViewer::StatsHandler);
-	viewer->addEventHandler(new osgExample::SwitchInstancingHandler(viewer, scene, maxInstanceMatrices, maxUniformBlockSize, setupScene));
+	viewer->addEventHandler(new osgExample::SwitchInstancingHandler(viewer, scene, setupScene));
 
 	// print usage
 	std::cout << "OpenSceneraph Instancing Example" << std::endl;

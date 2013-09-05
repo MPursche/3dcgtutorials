@@ -22,6 +22,7 @@
 */
 
 #include "InstancedGeometryBuilder.h"
+#include "InstancedDrawable.h"
 
 // std
 #include <cstring>
@@ -40,6 +41,7 @@
 // osgExample
 #include "ComputeInstanceBoundingBoxCallback.h"
 #include "ComputeTextureBoundingBoxCallback.h"
+#include "MatrixUniformUpdateCallback.h"
 
 namespace osgExample
 {
@@ -69,7 +71,7 @@ osg::ref_ptr<osg::Node> InstancedGeometryBuilder::getSoftwareInstancedNode() con
 	program->addShader(fsShader);
 
 	group->getOrCreateStateSet()->setAttributeAndModes(program, osg::StateAttribute::ON);
-
+	
 	return group;
 }
 
@@ -189,6 +191,43 @@ osg::ref_ptr<osg::Node> InstancedGeometryBuilder::getUBOHardwareInstancedNode() 
 	return instancedNode;
 }
 
+osg::ref_ptr<osg::Node> InstancedGeometryBuilder::getVertexAttribHardwareInstancedNode() const
+{
+	// create custom instanced drawable
+	osg::ref_ptr<InstancedDrawable> drawable = new InstancedDrawable;
+	drawable->setVertexArray(dynamic_cast<osg::Vec3Array*>(m_geometry->getVertexArray()));
+	drawable->setNormalArray(dynamic_cast<osg::Vec3Array*>(m_geometry->getNormalArray()));
+	drawable->setTexCoordArray(dynamic_cast<osg::Vec2Array*>(m_geometry->getTexCoordArray(0)));
+	
+	osg::ref_ptr<osg::DrawElementsUByte> instancedPrimitive = dynamic_cast<osg::DrawElementsUByte*>(m_geometry->getPrimitiveSet(0)->clone(osg::CopyOp::DEEP_COPY_ALL));
+	instancedPrimitive->setNumInstances(m_matrices.size());
+	drawable->setDrawElements(instancedPrimitive);
+	drawable->setMatrixArray(m_matrices);
+
+	// create geode and program to wrap the drawable
+	osg::ref_ptr<osg::Geode> geode = new osg::Geode;
+	geode->addDrawable(drawable);
+
+	osg::ref_ptr<osg::Program> program = new osg::Program;
+	osg::ref_ptr<osg::Shader> vsShader = osgDB::readShaderFile("../shader/attribute_instancing.vert");
+	osg::ref_ptr<osg::Shader> fsShader = osgDB::readShaderFile("../shader/attribute_instancing.frag");
+	program->addShader(vsShader);
+	program->addShader(fsShader);
+	program->addBindAttribLocation("vPosition", 0);
+	program->addBindAttribLocation("vNormal", 1);
+	program->addBindAttribLocation("vTexCoord", 2);
+	program->addBindAttribLocation("vInstanceModelMatrix", 3);
+	geode->getOrCreateStateSet()->setAttributeAndModes(program, osg::StateAttribute::ON);
+
+	// add matrix uniforms and update callback
+	osg::ref_ptr<osgExample::MatrixUniformUpdateCallback> updateCallback = new osgExample::MatrixUniformUpdateCallback;
+	geode->getOrCreateStateSet()->addUniform(updateCallback->getModelViewProjectionMatrixUniform());
+	geode->getOrCreateStateSet()->addUniform(updateCallback->getNormalMatrixUniform());
+	geode->setCullCallback(updateCallback);
+
+	return geode;
+}
+
 osg::ref_ptr<osg::Node> InstancedGeometryBuilder::createHardwareInstancedGeode(unsigned int start, unsigned int end) const
 {
 		// we don't have more matrices than uniform space so we only need one geode
@@ -218,6 +257,11 @@ osg::ref_ptr<osg::Node> InstancedGeometryBuilder::createHardwareInstancedGeode(u
 		// add bounding box callback so osg computes the right bounding box for our geode
 		geometry->setComputeBoundingBoxCallback(new ComputeInstancedBoundingBoxCallback(instanceMatrixUniform));
 
+		// add matrix uniforms and update callback
+		osg::ref_ptr<osgExample::MatrixUniformUpdateCallback> updateCallback = new osgExample::MatrixUniformUpdateCallback;
+		geode->getOrCreateStateSet()->addUniform(updateCallback->getModelViewProjectionMatrixUniform());
+		geode->getOrCreateStateSet()->addUniform(updateCallback->getNormalMatrixUniform());
+		geode->setCullCallback(updateCallback);
 
 		return geode;
 }
@@ -268,6 +312,12 @@ osg::ref_ptr<osg::Node> InstancedGeometryBuilder::createTextureHardwareInstanced
 	std::vector<osg::Matrixd> matrices;
 	matrices.insert(matrices.begin(), m_matrices.begin()+start, m_matrices.begin()+end);
 	geometry->setComputeBoundingBoxCallback(new ComputeTextureBoundingBoxCallback(matrices));
+	
+	// add matrix uniforms and update callback
+	osg::ref_ptr<osgExample::MatrixUniformUpdateCallback> updateCallback = new osgExample::MatrixUniformUpdateCallback;
+	geode->getOrCreateStateSet()->addUniform(updateCallback->getModelViewProjectionMatrixUniform());
+	geode->getOrCreateStateSet()->addUniform(updateCallback->getNormalMatrixUniform());
+	geode->setCullCallback(updateCallback);
 
 	return geode;
 }
@@ -311,6 +361,12 @@ osg::ref_ptr<osg::Node> InstancedGeometryBuilder::createUBOHardwareInstancedGeod
 	std::vector<osg::Matrixd> matrices;
 	matrices.insert(matrices.begin(), m_matrices.begin()+start, m_matrices.begin()+end);
 	geometry->setComputeBoundingBoxCallback(new ComputeTextureBoundingBoxCallback(matrices));
+
+	// add matrix uniforms and update callback
+	osg::ref_ptr<osgExample::MatrixUniformUpdateCallback> updateCallback = new osgExample::MatrixUniformUpdateCallback;
+	geode->getOrCreateStateSet()->addUniform(updateCallback->getModelViewProjectionMatrixUniform());
+	geode->getOrCreateStateSet()->addUniform(updateCallback->getNormalMatrixUniform());
+	geode->setCullCallback(updateCallback);
 
 	return geode;
 }
