@@ -42,6 +42,7 @@ public:
 	virtual osg::BoundingBox computeBound() const;
 	virtual void compileGLObjects(osg::RenderInfo& renderInfo) const;
 	virtual void drawImplementation(osg::RenderInfo& renderInfo) const;
+	virtual void InstancedDrawable::accept(osg::PrimitiveFunctor& functor) const;
 
 	void inline setVertexArray(osg::ref_ptr<osg::Vec3Array> vertexArray) { m_vertexArray = vertexArray; }
 	void inline setMatrixArray(const std::vector<osg::Matrixd>& matrixArray) { m_matrixArray = matrixArray; }
@@ -55,9 +56,6 @@ private:
 	mutable GLuint						m_vbo;
 	mutable GLuint						m_instancebo;
 	mutable GLuint						m_ebo;
-
-	osg::ref_ptr<osg::Uniform> m_modelViewProjectionMatrix;
-	osg::ref_ptr<osg::Uniform> m_normalMatrix;
 
 	osg::ref_ptr<osg::Vec3Array>		m_vertexArray;
 	std::vector<osg::Matrixd>			m_matrixArray;

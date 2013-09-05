@@ -187,8 +187,17 @@ void InstancedDrawable::drawImplementation(osg::RenderInfo& renderInfo) const
 	}
 
 	glDrawElementsInstanced(m_drawElements->getMode(), m_drawElements->getNumIndices(), dataType, NULL, m_drawElements->getNumInstances());
-	m_drawElements->draw(*(renderInfo.getState()), true);
 	glBindVertexArray(0);
+}
+
+void InstancedDrawable::accept(osg::PrimitiveFunctor& functor) const
+{
+	if (!m_vertexArray || !m_drawElements)
+		return;
+
+	// add drawable to the stats
+	functor.setVertexArray(m_vertexArray->size(), static_cast<const osg::Vec3*>(m_vertexArray->getDataPointer()));
+	m_drawElements->accept(functor);
 }
 
 }
