@@ -187,6 +187,7 @@ void InstancedDrawable::drawImplementation(osg::RenderInfo& renderInfo) const
 	}
 
 	glDrawElementsInstanced(m_drawElements->getMode(), m_drawElements->getNumIndices(), dataType, NULL, m_drawElements->getNumInstances());
+	m_drawElements->draw(*(renderInfo.getState()), true);
 	glBindVertexArray(0);
 }
 
