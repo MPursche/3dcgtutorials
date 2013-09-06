@@ -35,23 +35,26 @@ class InstancedDrawable : public osg::Drawable
 public:
 	InstancedDrawable();
 	InstancedDrawable(const InstancedDrawable& other, const osg::CopyOp& copyOp);
-	~InstancedDrawable();
 
 	META_Object(osgExample, InstancedDrawable)
 
 	virtual osg::BoundingBox computeBound() const;
 	virtual void compileGLObjects(osg::RenderInfo& renderInfo) const;
 	virtual void drawImplementation(osg::RenderInfo& renderInfo) const;
-	virtual void InstancedDrawable::accept(osg::PrimitiveFunctor& functor) const;
+	virtual void accept(osg::PrimitiveFunctor& functor) const;
+	virtual void releaseGLObjects(osg::State* state) const;
 
-	void inline setVertexArray(osg::ref_ptr<osg::Vec3Array> vertexArray) { m_vertexArray = vertexArray; }
-	void inline setMatrixArray(const std::vector<osg::Matrixd>& matrixArray) { m_matrixArray = matrixArray; }
-	void inline setNormalArray(osg::ref_ptr<osg::Vec3Array> normalArray) { m_normalArray = normalArray; }
-	void inline setTexCoordArray(osg::ref_ptr<osg::Vec2Array> texCoordArray) { m_texCoordArray = texCoordArray; }
-	void inline setDrawElements(osg::ref_ptr<osg::DrawElements> drawElements) { m_drawElements = drawElements; }
+	inline void setVertexArray(osg::ref_ptr<osg::Vec3Array> vertexArray) { m_vertexArray = vertexArray;  m_dirty = true; }
+	inline void setMatrixArray(const std::vector<osg::Matrixd>& matrixArray) { m_matrixArray = matrixArray;  m_dirty = true; }
+	inline void setNormalArray(osg::ref_ptr<osg::Vec3Array> normalArray) { m_normalArray = normalArray; m_dirty = true; }
+	inline void setTexCoordArray(osg::ref_ptr<osg::Vec2Array> texCoordArray) { m_texCoordArray = texCoordArray; m_dirty = true; }
+	inline void setDrawElements(osg::ref_ptr<osg::DrawElements> drawElements) { m_drawElements = drawElements; m_dirty = true; }
 
+	inline void dirtyArrays() { m_dirty = true; }
+protected:
+	virtual ~InstancedDrawable();
 private:
-	bool								m_dirty;
+	mutable bool						m_dirty;
 	mutable GLuint						m_vao;
 	mutable GLuint						m_vbo;
 	mutable GLuint						m_instancebo;

@@ -67,10 +67,7 @@ InstancedDrawable::InstancedDrawable(const InstancedDrawable& other, const osg::
 
 InstancedDrawable::~InstancedDrawable()
 {
-	glDeleteBuffers(1, &m_vbo);
-	glDeleteBuffers(1, &m_instancebo);
-	glDeleteBuffers(1, &m_ebo);
-	glDeleteVertexArrays(1, &m_vao);
+	releaseGLObjects(0);
 }
 
 osg::BoundingBox InstancedDrawable::computeBound() const
@@ -98,6 +95,12 @@ void InstancedDrawable::compileGLObjects(osg::RenderInfo& renderInfo) const
 		m_instancebo = buffers[1];
 		m_ebo = buffers[2];
 
+		glGenVertexArrays(1, &m_vao);
+	}
+
+	if (m_dirty) 
+	{
+		m_dirty = false;
 		// create one array to fit all vertex data
 		VertexData* vertexData = new VertexData[m_vertexArray->size()];
 		for (unsigned int i = 0; i < m_vertexArray->size(); ++i)
@@ -135,8 +138,6 @@ void InstancedDrawable::compileGLObjects(osg::RenderInfo& renderInfo) const
 		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_ebo);
 		glBufferData(GL_ELEMENT_ARRAY_BUFFER, m_drawElements->getTotalDataSize(), m_drawElements->getDataPointer(), GL_STATIC_DRAW);
 		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
-		
-		glGenVertexArrays(1, &m_vao);
 
 		glBindVertexArray(m_vao);
 		glEnableVertexAttribArray(0);
@@ -166,6 +167,21 @@ void InstancedDrawable::compileGLObjects(osg::RenderInfo& renderInfo) const
 		glBindBuffer(GL_ARRAY_BUFFER, 0);
 		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 	}
+}
+
+void InstancedDrawable::releaseGLObjects(osg::State* state) const
+{
+    if(m_vbo && m_instancebo && m_ebo && m_vao)
+	{
+		glDeleteBuffers(1, &m_vbo);
+		glDeleteBuffers(1, &m_instancebo);
+		glDeleteBuffers(1, &m_ebo);
+		glDeleteVertexArrays(1, &m_vao);
+		m_vbo = 0;
+		m_instancebo = 0;
+		m_ebo = 0;
+		m_vao = 0;
+	}	
 }
 
 void InstancedDrawable::drawImplementation(osg::RenderInfo& renderInfo) const
