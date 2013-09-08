@@ -89,7 +89,7 @@ osg::ref_ptr<osg::Node> InstancedGeometryBuilder::getHardwareInstancedNode() con
 		osg::ref_ptr<osg::Group> group = new osg::Group;
 
 		unsigned int numGeodes = m_matrices.size() / m_maxMatrixUniforms;
-		for (unsigned int i = 0; i <= numGeodes; ++i)
+		for (unsigned int i = 0; i < numGeodes; ++i)
 		{
 			unsigned int start = i*m_maxMatrixUniforms;
 			unsigned int end    = std::min((unsigned int)m_matrices.size(), (start + m_maxMatrixUniforms));
@@ -126,7 +126,7 @@ osg::ref_ptr<osg::Node> InstancedGeometryBuilder::getTextureHardwareInstancedNod
 		osg::ref_ptr<osg::Group> group = new osg::Group;
 
 		unsigned int numGeodes = m_matrices.size() / m_maxTextureResolution;
-		for (unsigned int i = 0; i <= numGeodes; ++i)
+		for (unsigned int i = 0; i < numGeodes; ++i)
 		{
 			unsigned int start = i*m_maxTextureResolution;
 			unsigned int end    = std::min((unsigned int)m_matrices.size(), (start + m_maxTextureResolution));
@@ -166,7 +166,7 @@ osg::ref_ptr<osg::Node> InstancedGeometryBuilder::getUBOHardwareInstancedNode() 
 		osg::ref_ptr<osg::Group> group = new osg::Group;
 
 		unsigned int numGeodes = m_matrices.size() / maxUBOMatrices;
-		for (unsigned int i = 0; i <= numGeodes; ++i)
+		for (unsigned int i = 0; i < numGeodes; ++i)
 		{
 			unsigned int start = i*maxUBOMatrices;
 			unsigned int end    = std::min((unsigned int)m_matrices.size(), (start + maxUBOMatrices));

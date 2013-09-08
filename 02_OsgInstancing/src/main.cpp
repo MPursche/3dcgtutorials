@@ -54,7 +54,7 @@
 osgExample::ASCFileLoader g_fileLoader;
 osg::ref_ptr<osgExample::InstancedGeometryBuilder> g_builder;
 
-void getMaxNumberOfUniforms(osg::GraphicsContext* context, GLint& maxNumUniforms, GLint& maxUniformBlockSize)
+void initOpenGL(osg::GraphicsContext* context, GLint& maxNumUniforms, GLint& maxUniformBlockSize)
 {
 
 	context->realize();
@@ -220,7 +220,7 @@ int main(int argc, char** argv)
 	viewer->getContexts(contexts);
 	GLint maxNumUniforms = 0;
 	GLint maxUniformBlockSize = 0;
-	getMaxNumberOfUniforms(contexts[0], maxNumUniforms, maxUniformBlockSize);
+	initOpenGL(contexts[0], maxNumUniforms, maxUniformBlockSize);
 	//contexts[0]->getState()->setUseModelViewAndProjectionUniforms(true);
 
 	// we need to reserve some space for modelViewMatrix, projectionMatrix, modelViewProjectionMatrix and normalMatrix, we also need 16 float uniforms per matrix

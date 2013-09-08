@@ -27,6 +27,7 @@
 
 #include "InstancedDrawable.h"
 
+// helper struct to pack all vertex data into the array of structs form
 struct VertexData
 {
 	GLfloat vertex[3];
@@ -97,75 +98,73 @@ void InstancedDrawable::compileGLObjects(osg::RenderInfo& renderInfo) const
 		m_vbo = buffers[0];
 		m_instancebo = buffers[1];
 		m_ebo = buffers[2];
-
-		// create one array to fit all vertex data
-		VertexData* vertexData = new VertexData[m_vertexArray->size()];
-		for (unsigned int i = 0; i < m_vertexArray->size(); ++i)
-		{
-			vertexData[i].vertex[0] = m_vertexArray->at(i).x();
-			vertexData[i].vertex[1] = m_vertexArray->at(i).y();
-			vertexData[i].vertex[2] = m_vertexArray->at(i).z();
-
-			vertexData[i].normal[0] = m_normalArray->at(i).x();
-			vertexData[i].normal[1] = m_normalArray->at(i).y();
-			vertexData[i].normal[2] = m_normalArray->at(i).z();
-
-			vertexData[i].texCoord[0] = m_texCoordArray->at(i).x();
-			vertexData[i].texCoord[1] = m_texCoordArray->at(i).y();
-		}
-		
-		glBindBuffer(GL_ARRAY_BUFFER, m_vbo);
-		glBufferData(GL_ARRAY_BUFFER, sizeof(VertexData) * m_vertexArray->size(), vertexData, GL_STATIC_DRAW);
-		delete[] vertexData;
-
-		// pack matrices into float array
-		osg::ref_ptr<osg::FloatArray> matrixArray = new osg::FloatArray(m_matrixArray.size()*16);
-	
-		for (unsigned int i = 0; i < m_matrixArray.size(); ++i)
-		{
-			for (unsigned int j = 0; j < 16; ++j)
-			{
-				(*matrixArray)[i*16+j] =  m_matrixArray[i].ptr()[j];
-			}
-		}
-
-		glBindBuffer(GL_ARRAY_BUFFER, m_instancebo);
-		glBufferData(GL_ARRAY_BUFFER, matrixArray->getTotalDataSize(), matrixArray->getDataPointer(), GL_STATIC_DRAW);
-
-		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_ebo);
-		glBufferData(GL_ELEMENT_ARRAY_BUFFER, m_drawElements->getTotalDataSize(), m_drawElements->getDataPointer(), GL_STATIC_DRAW);
-		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
-		
 		glGenVertexArrays(1, &m_vao);
-
-		glBindVertexArray(m_vao);
-		glEnableVertexAttribArray(0);
-		glEnableVertexAttribArray(1);
-		glEnableVertexAttribArray(2);
-		glEnableVertexAttribArray(3);
-		glEnableVertexAttribArray(4);
-		glEnableVertexAttribArray(5);
-		glEnableVertexAttribArray(6);
-		glBindBuffer(GL_ARRAY_BUFFER, m_vbo);
-		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(VertexData), 0);
-		glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(VertexData), (GLvoid*)(sizeof(GLfloat) * 3));
-		glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(VertexData), (GLvoid*)(sizeof(GLfloat) * 6));
-		glBindBuffer(GL_ARRAY_BUFFER, m_instancebo);
-		glVertexAttribPointer(3, 4, GL_FLOAT, GL_FALSE, 16 * sizeof(float), 0);
-		glVertexAttribPointer(4, 4, GL_FLOAT, GL_FALSE, 16 * sizeof(float), (GLvoid*)(4  * sizeof(float)));
-		glVertexAttribPointer(5, 4, GL_FLOAT, GL_FALSE, 16 * sizeof(float), (GLvoid*)(8  * sizeof(float)));
-		glVertexAttribPointer(6, 4, GL_FLOAT, GL_FALSE, 16 * sizeof(float), (GLvoid*)(12 * sizeof(float)));
-		glVertexAttribDivisor(3, 1);
-		glVertexAttribDivisor(4, 1);
-		glVertexAttribDivisor(5, 1);
-		glVertexAttribDivisor(6, 1);
-		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_ebo);
-		glBindVertexArray(0);
-
-		// unbind all buffers to prevent undefined behavior of osg
-		glBindBuffer(GL_ARRAY_BUFFER, 0);
-		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 	}
+
+	// create one array to fit all vertex data
+	VertexData* vertexData = new VertexData[m_vertexArray->size()];
+	for (unsigned int i = 0; i < m_vertexArray->size(); ++i)
+	{
+		vertexData[i].vertex[0] = m_vertexArray->at(i).x();
+		vertexData[i].vertex[1] = m_vertexArray->at(i).y();
+		vertexData[i].vertex[2] = m_vertexArray->at(i).z();
+
+		vertexData[i].normal[0] = m_normalArray->at(i).x();
+		vertexData[i].normal[1] = m_normalArray->at(i).y();
+		vertexData[i].normal[2] = m_normalArray->at(i).z();
+
+		vertexData[i].texCoord[0] = m_texCoordArray->at(i).x();
+		vertexData[i].texCoord[1] = m_texCoordArray->at(i).y();
+	}
+		
+	glBindBuffer(GL_ARRAY_BUFFER, m_vbo);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(VertexData) * m_vertexArray->size(), vertexData, GL_STATIC_DRAW);
+	delete[] vertexData;
+
+	// pack matrices into float array
+	osg::ref_ptr<osg::FloatArray> matrixArray = new osg::FloatArray(m_matrixArray.size()*16);
+	
+	for (unsigned int i = 0; i < m_matrixArray.size(); ++i)
+	{
+		for (unsigned int j = 0; j < 16; ++j)
+		{
+			(*matrixArray)[i*16+j] =  m_matrixArray[i].ptr()[j];
+		}
+	}
+
+	glBindBuffer(GL_ARRAY_BUFFER, m_instancebo);
+	glBufferData(GL_ARRAY_BUFFER, matrixArray->getTotalDataSize(), matrixArray->getDataPointer(), GL_STATIC_DRAW);
+
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_ebo);
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER, m_drawElements->getTotalDataSize(), m_drawElements->getDataPointer(), GL_STATIC_DRAW);
+
+	glBindVertexArray(m_vao);
+	glEnableVertexAttribArray(0);
+	glEnableVertexAttribArray(1);
+	glEnableVertexAttribArray(2);
+	glEnableVertexAttribArray(3);
+	glEnableVertexAttribArray(4);
+	glEnableVertexAttribArray(5);
+	glEnableVertexAttribArray(6);
+	glBindBuffer(GL_ARRAY_BUFFER, m_vbo);
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(VertexData), 0);
+	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(VertexData), (GLvoid*)(sizeof(GLfloat) * 3));
+	glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(VertexData), (GLvoid*)(sizeof(GLfloat) * 6));
+	glBindBuffer(GL_ARRAY_BUFFER, m_instancebo);
+	glVertexAttribPointer(3, 4, GL_FLOAT, GL_FALSE, 16 * sizeof(float), 0);
+	glVertexAttribPointer(4, 4, GL_FLOAT, GL_FALSE, 16 * sizeof(float), (GLvoid*)(4  * sizeof(float)));
+	glVertexAttribPointer(5, 4, GL_FLOAT, GL_FALSE, 16 * sizeof(float), (GLvoid*)(8  * sizeof(float)));
+	glVertexAttribPointer(6, 4, GL_FLOAT, GL_FALSE, 16 * sizeof(float), (GLvoid*)(12 * sizeof(float)));
+	glVertexAttribDivisor(3, 1);
+	glVertexAttribDivisor(4, 1);
+	glVertexAttribDivisor(5, 1);
+	glVertexAttribDivisor(6, 1);
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_ebo);
+	glBindVertexArray(0);
+
+	// unbind all buffers to prevent undefined behavior of osg
+	glBindBuffer(GL_ARRAY_BUFFER, 0);
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 }
 
 void InstancedDrawable::drawImplementation(osg::RenderInfo& renderInfo) const
