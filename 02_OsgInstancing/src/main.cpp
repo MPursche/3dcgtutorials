@@ -244,7 +244,7 @@ int main(int argc, char** argv)
 	// print usage
 	std::cout << "OpenSceneraph Instancing Example" << std::endl;
 	std::cout << "================================" << std::endl << std::endl;
-	std::cout << "Switch between instancing techniques: 1, 2, 3" << std::endl;
+	std::cout << "Switch between instancing techniques: 1, 2, 3, 4, 5" << std::endl;
 	std::cout << "Increase/decrease scene complexety: +/-" << std::endl;
 	std::cout << "Cycle through different status informations(FPS and other stats): s" << std::endl;
 
