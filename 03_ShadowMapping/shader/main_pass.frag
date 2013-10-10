@@ -16,17 +16,18 @@ void main()
 	float visibility = 0.0;
 
 	for (float offsetY = -1.5; offsetY <= 1.5; offsetY += 1.0)
+	{
 		for(float offsetX = -1.5; offsetX <= 1.5; offsetX += 1.0)
 		{
-			float depth = texture2D(depthTexture, gl_TexCoord[1].xy + (vec2(offsetX, offsetY) * texelSize));
-			visibility += (shadowDepth <= (depth + 0.1)) ? 1.0 : 0.1;
+			float depth = texture2D(depthTexture, gl_TexCoord[1].xy + (vec2(offsetX, offsetY) * texelSize)).x;
+			visibility += (shadowDepth <= (depth + 0.1)) ? 0.0625 : 0.00625;
 		}
-	visibility *= 0.0625;
+	}
 
-	float specular = clamp(pow(dot(halfVector, normal), 30.0), 0.0, 1.0);
+	float specular = clamp(pow(dot(normalize(halfVector), normalize(normal)), 35.0), 0.0, 10.0);
 	float diffuse = clamp(dot(normalize(normal), normalize(viewSpace_lightDir)), 0.0, 1.0);
-	vec4 color = vec4(0.6, 0.6, 0.6, 1.0) * diffuse +
-	             texture2D(colorTexture, gl_TexCoord[0].st) * specular;
+	vec3 color = vec3(0.6, 0.6, 0.6) * diffuse +
+	             texture2D(colorTexture, gl_TexCoord[0].st).rgb * specular;
 
 	gl_FragColor.rgb = vec3(0.1, 0.1, 0.1)  + visibility * color.rgb;
 	gl_FragColor.a   = 1.0;

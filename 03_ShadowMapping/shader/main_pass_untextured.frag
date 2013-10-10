@@ -16,7 +16,7 @@ void main()
 	for (float offsetY = -1.5; offsetY <= 1.5; offsetY += 1.0)
 		for(float offsetX = -1.5; offsetX <= 1.5; offsetX += 1.0)
 		{
-			float depth = texture2D(depthTexture, gl_TexCoord[0].xy + (vec2(offsetX, offsetY) * texelSize));
+			float depth = texture2D(depthTexture, gl_TexCoord[0].xy + (vec2(offsetX, offsetY) * texelSize)).x;
 			visibility += (shadowDepth <= (depth + 0.1)) ? 1.0 : 0.1;
 		}
 	visibility *= 0.0625;
