@@ -142,7 +142,12 @@ int main(int argc, char** argv)
 	osg::ref_ptr<osg::StateSet> ss = scene->getOrCreateStateSet();
     ss->setDataVariance(osg::Object::DYNAMIC);
 	ss->setAttributeAndModes(program, osg::StateAttribute::ON | osg::StateAttribute::OVERRIDE);
-	ss->addUniform(new osg::Uniform("lightPosition", osg::Vec4(1.0f, 0.0f, 1.0f, 0.0f)));
+
+    osg::Uniform* lightDirection = new osg::Uniform(osg::Uniform::FLOAT_VEC4, "lightDirection", 3);
+    lightDirection->setElement(0, osg::Vec4(1.0f, 0.0f, 1.0f, 0.0f));
+    lightDirection->setElement(1, osg::Vec4(-1.0f, 0.0f, 1.0f, 0.0f));
+    lightDirection->setElement(2, osg::Vec4(0.0f, 1.0f, 1.0f, 0.0f));
+	ss->addUniform(lightDirection);
     osg::ref_ptr<osg::Uniform> visualizeLodUniform = new osg::Uniform("visualizeLod", false);
     visualizeLodUniform->setDataVariance(osg::Object::DYNAMIC);
     osg::ref_ptr<osg::Uniform> textureActiveUniform = new osg::Uniform("textureActive", false);

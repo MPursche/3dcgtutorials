@@ -3,18 +3,23 @@
 uniform vec3 minBounds;
 uniform vec3 maxBounds;
 uniform float lod;
-uniform vec4 lightPosition;
+uniform vec4 lightDirection[3];
 uniform int fixedVertices;
 uniform bool visualizeLod;
 
 smooth out vec3 normal;
-smooth out vec3 halfVector;
-smooth out vec3 viewSpace_lightDir;
+smooth out vec3 halfVector[3];
+smooth out vec3 viewSpace_lightDir[3];
 smooth out vec2 texCoord;
-smooth out vec4 diffuse;
-smooth out vec4 specular;
+
+smooth out vec4 ambient[3];
+smooth out vec4 diffuse[3];
+smooth out vec4 specular[3];
 smooth out float shininess;
-smooth out vec4 ambient;
+
+const vec4 ambientLight[3] = vec4[3](vec4(0.1, 0.1, 0.1, 1.0), vec4(0.1, 0.1, 0.1, 1.0), vec4(0.0, 0.1, 0.1, 1.0));
+const vec4 diffuseLight[3] = vec4[3](vec4(0.6, 0.6, 0.6, 1.0), vec4(0.6, 0.6, 0.6, 1.0), vec4(0.0, 0.6, 0.6, 1.0));
+const vec4 specularLight[3] = vec4[3](vec4(0.9, 0.9, 0.9, 1.0), vec4(0.9, 0.9, 0.9, 1.0), vec4(0.0, 0.5, 0.5, 1.0));
 
 vec4 lodColor(float lod)
 {
@@ -41,23 +46,30 @@ void main()
 	normal = normalize(gl_NormalMatrix * gl_Normal);
 
 	vec3 eye = normalize(-(gl_ModelViewMatrix * gl_Vertex).xyz);
-	viewSpace_lightDir = normalize(gl_NormalMatrix * lightPosition.xyz);
-	halfVector = normalize(viewSpace_lightDir + eye);
+	viewSpace_lightDir[0] = normalize(gl_NormalMatrix * lightDirection[0].xyz);
+	viewSpace_lightDir[1] = normalize(gl_NormalMatrix * lightDirection[1].xyz);
+	viewSpace_lightDir[2] = normalize(gl_NormalMatrix * lightDirection[2].xyz);
+	halfVector[0] = normalize(viewSpace_lightDir[0] + eye);
+	halfVector[1] = normalize(viewSpace_lightDir[1] + eye);
+	halfVector[2] = normalize(viewSpace_lightDir[2] + eye);
 	texCoord = gl_MultiTexCoord0.st;
 
 	if (visualizeLod)
 	{
-		diffuse =  lodColor(lod);
-		specular =  gl_FrontMaterial.specular * gl_LightSource[0].specular;
+		for (int i = 0; i < 3; ++i)
+		{
+			ambient[i] =  gl_FrontMaterial.ambient * ambientLight[i];
+			diffuse[i] =  lodColor(lod);
+			specular[i] =  gl_FrontMaterial.specular * specularLight[i];
+		}
 		shininess = gl_FrontMaterial.shininess;
-		ambient =  gl_FrontMaterial.ambient * gl_LightSource[0].ambient;
 	} else {
-		diffuse = gl_FrontMaterial.diffuse * gl_LightSource[0].diffuse;
-		//diffuse = (gl_VertexID < fixedVertices) ? vec4(1.0, 0.0, 0.0, 1.0) : vec4(0.0, 0.0, 0.0, 1.0);
-		specular = gl_FrontMaterial.specular * gl_LightSource[0].specular;
-		//specular = (gl_VertexID < fixedVertices) ? vec4(1.0, 0.0, 0.0, 1.0) : vec4(0.0, 0.0, 0.0, 1.0);
+		for (int i = 0; i < 3; ++i)
+		{
+			ambient[i] = gl_FrontMaterial.ambient * ambientLight[i];
+			diffuse[i] =  gl_FrontMaterial.diffuse * diffuseLight[i];
+			specular[i] =  gl_FrontMaterial.specular * specularLight[i];
+		}
 		shininess = gl_FrontMaterial.shininess;
-		ambient = gl_FrontMaterial.ambient * gl_LightSource[0].ambient;
-		//ambient = (gl_VertexID < fixedVertices) ? vec4(1.0, 0.0, 0.0, 1.0) : vec4(0.0, 0.0, 0.0, 1.0);
 	}
 }

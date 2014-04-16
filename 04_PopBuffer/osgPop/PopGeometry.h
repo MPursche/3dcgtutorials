@@ -8,9 +8,13 @@
 namespace osgPop
 {
 
+struct PopCullCallback;
+
 class OSG_EXPORT PopGeometry : public osg::Geometry
 {
 public:
+    friend struct PopCullCallback;
+
 	PopGeometry();
 	PopGeometry(const PopGeometry& rhs, const osg::CopyOp& copyop=osg::CopyOp::SHALLOW_COPY);
 
@@ -20,9 +24,7 @@ public:
     virtual const char* libraryName() const { return "osgPop"; }
     virtual const char* className() const { return "PopGeometry"; }
 
-	void drawImplementation(osg::RenderInfo& renderInfo) const;
-
-	inline void setMinBounds(float min) { _min = min; updateUniforms(); }
+    inline void setMinBounds(float min) { _min = min; updateUniforms(); }
 	inline float getMinBounds() const { return _min; }
 
 	inline void setMaxBounds(float max) { _max = max; updateUniforms(); }
@@ -39,7 +41,7 @@ public:
 
     void reconnectUniforms();
 protected:
-	void setLod(int lod) const;
+	void setLod(float lod) const;
 	void updateUniforms();
 
 	virtual ~PopGeometry() {}

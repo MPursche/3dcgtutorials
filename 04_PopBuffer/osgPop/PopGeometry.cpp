@@ -1,6 +1,8 @@
 #include "PopGeometry.h"
 #include "PopDrawElements.h"
 
+#include <osgUtil/CullVisitor>
+
 using namespace osg;
 
 namespace osgPop
@@ -10,6 +12,37 @@ double log2(double n)
 {  
     return log(n) / log(2);  
 }
+
+struct PopCullCallback : osg::Drawable::CullCallback
+{
+    virtual bool cull(osg::NodeVisitor* nv, osg::Drawable* drawable, osg::RenderInfo* renderInfo) const
+    {
+        osgUtil::CullVisitor* cv = dynamic_cast<osgUtil::CullVisitor*>(nv);
+        PopGeometry* popGeometry = dynamic_cast<PopGeometry*>(drawable);
+
+        if(cv && drawable)
+        {
+            // calculate error metric
+            float size = std::max(cv->getViewport()->width(), cv->getViewport()->height());
+            osg::Matrix mvp = *cv->getModelViewMatrix();
+	        osg::Vec3 centerView = popGeometry->getBound().center() * mvp;
+
+	        osg::Matrix projection = *cv->getProjectionMatrix();
+	        float fovY, aspectRation, zNear, zFar;
+	        projection.getPerspective(fovY, aspectRation, zNear, zFar);
+            
+            float _min = popGeometry->getMinBounds();
+            float _max = popGeometry->getMaxBounds();
+            float worldSpacePixelSize = (2.0f * std::max(-centerView.z(), 0.0f) * tan(DegreesToRadians(fovY)/2) / size) * popGeometry->getMaxViewSpaceError();
+            float lod = ceilf(log2((_max-_min)/worldSpacePixelSize)) - 1.0f;
+	        lod = std::max(std::min(lod, 31.0f), 0.0f);
+
+	        popGeometry->setLod(lod);
+        }
+        
+        return false;
+    }
+};
 
 
 
@@ -28,6 +61,8 @@ PopGeometry::PopGeometry()
 	setSupportsDisplayList(false);
 	setUseDisplayList(false);
 	setUseVertexBufferObjects(true);
+
+    setCullCallback(new PopCullCallback());
 
 	_lodUniform->setDataVariance(osg::Object::DYNAMIC);
 	getOrCreateStateSet()->addUniform(_lodUniform);
@@ -58,38 +93,18 @@ PopGeometry::PopGeometry(const PopGeometry& rhs, const CopyOp& copyop)
 	_stateset->addUniform(_numFixedVerticesUniform);
 }
 
-void PopGeometry::drawImplementation(RenderInfo& renderInfo) const
-{
-	State& state = *renderInfo.getState();
-
-	// calculate error metric
-	float size = std::max(state.getCurrentViewport()->width(), state.getCurrentViewport()->height());
-	osg::Matrix mvp = state.getModelViewMatrix();
-	osg::Vec3 centerView = getBound().center() * mvp;
-
-	osg::Matrix projection = state.getProjectionMatrix();
-	float fovY, aspectRation, zNear, zFar;
-	projection.getPerspective(fovY, aspectRation, zNear, zFar);
-
-	float worldSpacePixelSize = (2.0f * std::max(-centerView.z(), 0.0f) * tan(DegreesToRadians(fovY)/2) / size) * _maxViewSpaceError;
-	float lod = ceilf(log2((_max-_min)/worldSpacePixelSize)) - 1.0f;
-	lod = std::max(std::min(lod, 31.0f), 0.0f);
-
-	setLod(int(lod));
-	_lodUniform->set(floor(lod)+1.0f);
-	_lodUniform->dirty();
-	
-	Geometry::drawImplementation(renderInfo);
-}
-
-void PopGeometry::setLod(int lod) const
+void PopGeometry::setLod(float lod) const
 {
 	ref_ptr<PopDrawElements> popDrawElements = dynamic_cast<PopDrawElements*>(_primitives[0].get());
+    int _lod = int(lod);
 
 	if ( lod >= 0 && lod < _lodRange.size() && popDrawElements)
 	{
-		popDrawElements->setEnd(_lodRange[lod]);
+		popDrawElements->setEnd(_lodRange[_lod]);
 	}
+
+    _lodUniform->set(floor(lod)+1.0f);
+	_lodUniform->dirty();
 }
 
 void PopGeometry::updateUniforms()
