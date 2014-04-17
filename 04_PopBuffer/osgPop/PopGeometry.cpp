@@ -23,21 +23,12 @@ struct PopCullCallback : osg::Drawable::CullCallback
         if(cv && drawable)
         {
             // calculate error metric
-            float size = std::max(cv->getViewport()->width(), cv->getViewport()->height());
-            osg::Matrix mvp = *cv->getModelViewMatrix();
-	        osg::Vec3 centerView = popGeometry->getBound().center() * mvp;
-
-	        osg::Matrix projection = *cv->getProjectionMatrix();
-	        float fovY, aspectRation, zNear, zFar;
-	        projection.getPerspective(fovY, aspectRation, zNear, zFar);
-            
-            float _min = popGeometry->getMinBounds();
-            float _max = popGeometry->getMaxBounds();
-            float worldSpacePixelSize = (2.0f * std::max(-centerView.z(), 0.0f) * tan(DegreesToRadians(fovY)/2) / size) * popGeometry->getMaxViewSpaceError();
-            float lod = ceilf(log2((_max-_min)/worldSpacePixelSize)) - 1.0f;
+			osg::BoundingSphere bs(popGeometry->getBound().center(), popGeometry->getMaxBounds() - popGeometry->getMinBounds());
+			float screenSize = cv->clampedPixelSize(bs);
+			float lod = ceilf(log2(screenSize / (popGeometry->getMaxViewSpaceError() * cv->getLODScale()))) - 1.0f;
 	        lod = std::max(std::min(lod, 31.0f), 0.0f);
 
-	        popGeometry->setLod(lod);
+			popGeometry->setLod(lod);
         }
         
         return false;

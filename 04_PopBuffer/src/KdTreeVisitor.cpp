@@ -110,8 +110,8 @@ std::vector<osg::ref_ptr<osg::Drawable> > KdTreeVisitor::splitGeometry(osg::ref_
         osg::ref_ptr<osg::Array> colorArray = geometry->getColorArray();
         osg::ref_ptr<osg::Array> secondaryColorArray = geometry->getSecondaryColorArray();
         osg::ref_ptr<osg::Array> fogCoordArray = geometry->getFogCoordArray();
-        osg::Geometry::ArrayDataList& texCoordArrays = geometry->getTexCoordArrayList();
-        osg::Geometry::ArrayDataList& vertexAttribArrays = geometry->getVertexAttribArrayList();	
+        osg::Geometry::ArrayList& texCoordArrays = geometry->getTexCoordArrayList();
+        osg::Geometry::ArrayList& vertexAttribArrays = geometry->getVertexAttribArrayList();	
         osg::ref_ptr<osg::DrawElementsUInt> drawElements = collectTriangles(geometry);
 
         // create two new geomtries and vertex attribute arrays
@@ -129,15 +129,15 @@ std::vector<osg::ref_ptr<osg::Drawable> > KdTreeVisitor::splitGeometry(osg::ref_
 	    std::vector<osg::ref_ptr<osg::Array> > rightTexCoords;
 	    for (auto texCoordArray: texCoordArrays)
 	    {
-		    leftTexCoords.push_back(createArrayOfType(texCoordArray.array));
-		    rightTexCoords.push_back(createArrayOfType(texCoordArray.array));
+		    leftTexCoords.push_back(createArrayOfType(texCoordArray));
+		    rightTexCoords.push_back(createArrayOfType(texCoordArray));
 	    }
 	    std::vector<osg::ref_ptr<osg::Array> > leftVertexAttribs;
 	    std::vector<osg::ref_ptr<osg::Array> > rightVertexAttribs;
 	    for (auto vertexAttribArray: vertexAttribArrays)
 	    {
-		    leftVertexAttribs.push_back(createArrayOfType(vertexAttribArray.array));
-		    rightVertexAttribs.push_back(createArrayOfType(vertexAttribArray.array));
+		    leftVertexAttribs.push_back(createArrayOfType(vertexAttribArray));
+		    rightVertexAttribs.push_back(createArrayOfType(vertexAttribArray));
 	    }
 
         osg::ref_ptr<osg::Geometry> left = new osg::Geometry;
@@ -252,11 +252,11 @@ std::vector<osg::ref_ptr<osg::Drawable> > KdTreeVisitor::splitGeometry(osg::ref_
                         addElementTo(leftFogCoords, fogCoordArray, indices[j]);
                         for (size_t k = 0; k < leftTexCoords.size(); ++k)
                         {
-                            addElementTo(leftTexCoords[k], texCoordArrays[k].array, indices[j]);
+                            addElementTo(leftTexCoords[k], texCoordArrays[k], indices[j]);
                         }
                         for (size_t k = 0; k < leftVertexAttribs.size(); ++k)
                         {
-                            addElementTo(leftVertexAttribs[k], vertexAttribArrays[k].array, indices[j]);
+                            addElementTo(leftVertexAttribs[k], vertexAttribArrays[k], indices[j]);
                         }
                     }
                 }
@@ -283,11 +283,11 @@ std::vector<osg::ref_ptr<osg::Drawable> > KdTreeVisitor::splitGeometry(osg::ref_
                         addElementTo(rightFogCoords, fogCoordArray, indices[j]);
                         for (size_t k = 0; k < rightTexCoords.size(); ++k)
                         {
-                            addElementTo(rightTexCoords[k], texCoordArrays[k].array, indices[j]);
+                            addElementTo(rightTexCoords[k], texCoordArrays[k], indices[j]);
                         }
                         for (size_t k = 0; k < rightVertexAttribs.size(); ++k)
                         {
-                            addElementTo(rightVertexAttribs[k], vertexAttribArrays[k].array, indices[j]);
+                            addElementTo(rightVertexAttribs[k], vertexAttribArrays[k], indices[j]);
                         }
                     }
                 }

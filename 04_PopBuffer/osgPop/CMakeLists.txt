@@ -1,6 +1,12 @@
 # Set target name
 set(target osgPop)
 
+# msvc compiler fix
+if(MSVC)
+	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /bigobj")
+endif(MSVC)
+
+
 # Set include directories
 include_directories(
     ${OPENSCENEGRAPH_INCLUDE_DIRS}

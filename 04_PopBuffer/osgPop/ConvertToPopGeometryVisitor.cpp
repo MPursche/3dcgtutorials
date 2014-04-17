@@ -229,8 +229,8 @@ void ConvertToPopGeometryVisitor::findAndSortProtectedVertices(ref_ptr<Geometry>
 	ref_ptr<Array> colorArray = geometry->getColorArray();
 	ref_ptr<Array> secondaryColorArray = geometry->getSecondaryColorArray();
 	ref_ptr<Array> fogCoordArray = geometry->getFogCoordArray();
-	Geometry::ArrayDataList& texCoordArrays = geometry->getTexCoordArrayList();
-	Geometry::ArrayDataList& vertexAttribArrays = geometry->getVertexAttribArrayList();	
+	Geometry::ArrayList& texCoordArrays = geometry->getTexCoordArrayList();
+	Geometry::ArrayList& vertexAttribArrays = geometry->getVertexAttribArrayList();	
 
 	ref_ptr<Array> protectedVertices = createArrayOfType(vertexArray);
 	ref_ptr<Array> regularVertices = createArrayOfType(vertexArray);
@@ -246,15 +246,15 @@ void ConvertToPopGeometryVisitor::findAndSortProtectedVertices(ref_ptr<Geometry>
 	vector<ref_ptr<Array> > regularTexCoords;
 	for (auto texCoordArray: texCoordArrays)
 	{
-		protectedTexCoords.push_back(createArrayOfType(texCoordArray.array));
-		regularTexCoords.push_back(createArrayOfType(texCoordArray.array));
+		protectedTexCoords.push_back(createArrayOfType(texCoordArray));
+		regularTexCoords.push_back(createArrayOfType(texCoordArray));
 	}
 	vector<ref_ptr<Array> > protectedVertexAttribs;
 	vector<ref_ptr<Array> > regularVertexAttribs;
 	for (auto vertexAttribArray: vertexAttribArrays)
 	{
-		protectedVertexAttribs.push_back(createArrayOfType(vertexAttribArray.array));
-		regularVertexAttribs.push_back(createArrayOfType(vertexAttribArray.array));
+		protectedVertexAttribs.push_back(createArrayOfType(vertexAttribArray));
+		regularVertexAttribs.push_back(createArrayOfType(vertexAttribArray));
 	}
 
 	// first find protected vertices
@@ -296,11 +296,11 @@ void ConvertToPopGeometryVisitor::findAndSortProtectedVertices(ref_ptr<Geometry>
 			addElementTo(protectedFogCoords, fogCoordArray, halfEdge->originalVertexID);
 			for (size_t j = 0; j < protectedTexCoords.size(); ++j)
 			{
-				addElementTo(protectedTexCoords[j], texCoordArrays[j].array, halfEdge->originalVertexID);
+				addElementTo(protectedTexCoords[j], texCoordArrays[j], halfEdge->originalVertexID);
 			}
 			for (size_t j = 0; j < protectedVertexAttribs.size(); ++j)
 			{
-				addElementTo(protectedVertexAttribs[j], vertexAttribArrays[j].array, halfEdge->originalVertexID);
+				addElementTo(protectedVertexAttribs[j], vertexAttribArrays[j], halfEdge->originalVertexID);
 			}
 
 			protectedVertexIDMap[halfEdge->originalVertexID] = protectedVertices->getNumElements()-1;
@@ -315,11 +315,11 @@ void ConvertToPopGeometryVisitor::findAndSortProtectedVertices(ref_ptr<Geometry>
 			addElementTo(regularFogCoords, fogCoordArray, halfEdge->originalVertexID);
 			for (size_t j = 0; j < regularTexCoords.size(); ++j)
 			{
-				addElementTo(regularTexCoords[j], texCoordArrays[j].array, halfEdge->originalVertexID);
+				addElementTo(regularTexCoords[j], texCoordArrays[j], halfEdge->originalVertexID);
 			}
 			for (size_t j = 0; j < regularVertexAttribs.size(); ++j)
 			{
-				addElementTo(regularVertexAttribs[j], vertexAttribArrays[j].array, halfEdge->originalVertexID);
+				addElementTo(regularVertexAttribs[j], vertexAttribArrays[j], halfEdge->originalVertexID);
 			}
 
 			regularVertexIDMap[halfEdge->originalVertexID] = regularVertices->getNumElements()-1;

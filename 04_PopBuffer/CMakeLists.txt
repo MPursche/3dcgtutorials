@@ -66,6 +66,7 @@ if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_COMPILER_IS_GNUCC)
 	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++0x")
 endif(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_COMPILER_IS_GNUCC)
 
+
 # add serializer for pop geometry to the project
 set(OSG_PLUGIN_DIR "" CACHE PATH "Installation dir for PopGeometry serializer")
 add_subdirectory(serializer)
