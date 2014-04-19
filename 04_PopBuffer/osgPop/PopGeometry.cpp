@@ -20,7 +20,7 @@ struct PopCullCallback : osg::Drawable::CullCallback
         osgUtil::CullVisitor* cv = dynamic_cast<osgUtil::CullVisitor*>(nv);
         PopGeometry* popGeometry = dynamic_cast<PopGeometry*>(drawable);
 
-        if(cv && drawable)
+		if(cv && popGeometry)
         {
             // calculate error metric
 			osg::BoundingSphere bs(popGeometry->getBound().center(), popGeometry->getMaxBounds() - popGeometry->getMinBounds());
@@ -40,17 +40,18 @@ struct PopCullCallback : osg::Drawable::CullCallback
 PopGeometry::PopGeometry()
 	: Geometry()
 	, _lodRange(32)
+	, _lastDrawEnd(0)
 	, _min(FLT_MIN)
 	, _max(FLT_MAX)
 	, _numFixedVertices(0)
-	, _lodUniform(new osg::Uniform("lod", 32.0f))
-	, _minBoundsUniform(new osg::Uniform("minBounds", osg::Vec3(_min, _min, _min)))
-	, _maxBoundsUniform(new osg::Uniform("maxBounds", osg::Vec3(_max, _max, _max)))
-	, _numFixedVerticesUniform(new osg::Uniform("fixedVertices", _numFixedVertices))
+	, _lodUniform(new osg::Uniform("osg_VertexLod", 32.0f))
+	, _minBoundsUniform(new osg::Uniform("osg_MinBounds", osg::Vec3(_min, _min, _min)))
+	, _maxBoundsUniform(new osg::Uniform("osg_MaxBounds", osg::Vec3(_max, _max, _max)))
+	, _numFixedVerticesUniform(new osg::Uniform("osg_ProtectedVertices", _numFixedVertices))
 	, _maxViewSpaceError(1.0f) 
 {
-	setSupportsDisplayList(false);
-	setUseDisplayList(false);
+	setSupportsDisplayList(true);
+	setUseDisplayList(true);
 	setUseVertexBufferObjects(true);
 
     setCullCallback(new PopCullCallback());
@@ -65,6 +66,7 @@ PopGeometry::PopGeometry()
 PopGeometry::PopGeometry(const PopGeometry& rhs, const CopyOp& copyop)
 	: Geometry(rhs, copyop)
 	, _lodRange(rhs._lodRange)
+	, _lastDrawEnd(0)
 	, _min(rhs._min)
 	, _max(rhs._max)
 	, _numFixedVertices(rhs._numFixedVertices)
@@ -74,8 +76,8 @@ PopGeometry::PopGeometry(const PopGeometry& rhs, const CopyOp& copyop)
 	, _numFixedVerticesUniform(copyop(rhs._numFixedVerticesUniform))
 	, _maxViewSpaceError(rhs._maxViewSpaceError)
 {
-	setSupportsDisplayList(false);
-	setUseDisplayList(false);
+	setSupportsDisplayList(true);
+	setUseDisplayList(true);
 	setUseVertexBufferObjects(true);
 
 	getOrCreateStateSet()->addUniform(_lodUniform);
@@ -84,18 +86,25 @@ PopGeometry::PopGeometry(const PopGeometry& rhs, const CopyOp& copyop)
 	_stateset->addUniform(_numFixedVerticesUniform);
 }
 
-void PopGeometry::setLod(float lod) const
+void PopGeometry::setLod(float lod)
 {
-	ref_ptr<PopDrawElements> popDrawElements = dynamic_cast<PopDrawElements*>(_primitives[0].get());
+	PopDrawElements* popDrawElements = dynamic_cast<PopDrawElements*>(_primitives[0].get());
     int _lod = int(lod);
+	GLint drawEnd = _lodRange[_lod];
 
 	if ( lod >= 0 && lod < _lodRange.size() && popDrawElements)
 	{
-		popDrawElements->setEnd(_lodRange[_lod]);
+		popDrawElements->setEnd(drawEnd);
 	}
 
     _lodUniform->set(floor(lod)+1.0f);
 	_lodUniform->dirty();
+
+	if(drawEnd != _lastDrawEnd)
+	{
+		dirtyDisplayList();
+		_lastDrawEnd = drawEnd;
+	}
 }
 
 void PopGeometry::updateUniforms()
@@ -112,16 +121,16 @@ void PopGeometry::reconnectUniforms()
 {
     if (_stateset)
     {
-        osg::Uniform* lodUniform = _stateset->getUniform("lod");
+        osg::Uniform* lodUniform = _stateset->getUniform("osg_VertexLod");
         if (lodUniform) { _lodUniform = lodUniform; }
             
-        osg::Uniform* minBoundsUniform = _stateset->getUniform("minBounds");
+        osg::Uniform* minBoundsUniform = _stateset->getUniform("osg_MinBounds");
         if (minBoundsUniform) { _minBoundsUniform = minBoundsUniform; }
 
-        osg::Uniform* maxBoundsUniform = _stateset->getUniform("maxBounds");
+        osg::Uniform* maxBoundsUniform = _stateset->getUniform("osg_MaxBounds");
         if (maxBoundsUniform) { _maxBoundsUniform = maxBoundsUniform; }
 
-        osg::Uniform* numFixedVerticesUniform = _stateset->getUniform("fixedVertices");
+        osg::Uniform* numFixedVerticesUniform = _stateset->getUniform("osg_ProtectedVertices");
         if (numFixedVerticesUniform) { _numFixedVerticesUniform = numFixedVerticesUniform; }
     }
 }

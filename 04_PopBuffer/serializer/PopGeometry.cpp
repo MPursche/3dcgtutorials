@@ -54,12 +54,26 @@ struct PopGeometryFinishedObjectReadCallback : public osgDB::FinishedObjectReadC
         // convert primitive sets to pop primitives
         for (size_t i = 0; i < geometry.getNumPrimitiveSets(); ++i)
         {
-            osg::DrawElementsUInt* drawElements = dynamic_cast<osg::DrawElementsUInt*>(geometry.getPrimitiveSet(i));
+			osg::PrimitiveSet* primitive = geometry.getPrimitiveSet(i);
 
-            if (drawElements)
-            {
-                geometry.setPrimitiveSet(i, new osgPop::PopDrawElements(*drawElements));
-            }
+			switch(primitive->getType())
+			{
+			case osg::PrimitiveSet::DrawElementsUBytePrimitiveType:
+				{
+					osg::DrawElementsUByte* drawElements = static_cast<osg::DrawElementsUByte*>(primitive);
+					geometry.setPrimitiveSet(i, new osgPop::PopDrawElementsUByte(*drawElements));
+				} break;
+			case osg::PrimitiveSet::DrawElementsUShortPrimitiveType:
+				{
+					osg::DrawElementsUShort* drawElements = static_cast<osg::DrawElementsUShort*>(primitive);
+					geometry.setPrimitiveSet(i, new osgPop::PopDrawElementsUShort(*drawElements));
+				} break;
+			case osg::PrimitiveSet::DrawElementsUIntPrimitiveType:
+				{
+					osg::DrawElementsUInt* drawElements = static_cast<osg::DrawElementsUInt*>(primitive);
+					geometry.setPrimitiveSet(i, new osgPop::PopDrawElementsUInt(*drawElements));
+				} break;
+			}
         }
 
         // reconnect uniforms
@@ -68,7 +82,7 @@ struct PopGeometryFinishedObjectReadCallback : public osgDB::FinishedObjectReadC
 };
 
 REGISTER_OBJECT_WRAPPER( PopGeometry,
-                         new osgPop::PopGeometry,
+                         new osgPop::PopGeometry(),
                          osgPop::PopGeometry,
                          "osg::Object osg::Drawable osg::Geometry osgPop::PopGeometry" )
 {

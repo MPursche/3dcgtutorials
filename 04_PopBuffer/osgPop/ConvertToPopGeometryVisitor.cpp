@@ -209,7 +209,8 @@ void ConvertToPopGeometryVisitor::findHalfEdgeOpposite(shared_ptr<vector<HalfEdg
 void ConvertToPopGeometryVisitor::createAndAddDrawPrimitive(std::shared_ptr<std::vector<ref_ptr<DrawElementsUInt> > > lodDrawElements,
                                                             ref_ptr<PopGeometry> popGeometry)
 {
-    ref_ptr<PopDrawElements> popDrawElements = new PopDrawElements(GL_TRIANGLES);
+    // first merge geometry in a UInt draw element
+	ref_ptr<PopDrawElementsUInt> popDrawElements = new PopDrawElementsUInt(GL_TRIANGLES);
 
 	for (size_t j = 0; j < lodDrawElements->size(); ++j)
 	{
@@ -218,8 +219,39 @@ void ConvertToPopGeometryVisitor::createAndAddDrawPrimitive(std::shared_ptr<std:
 	}
 	popDrawElements->setStart(0);
 	popDrawElements->setEnd(popGeometry->getLodRange()[31]);
-    popGeometry->removePrimitiveSet(0);
-	popGeometry->addPrimitiveSet(popDrawElements);
+
+	// then create a draw element that fits the vertexbuffer size
+	size_t numVertices = popGeometry->getVertexArray()->getNumElements();
+
+	if (numVertices <= UCHAR_MAX)
+	{
+		ref_ptr<PopDrawElementsUByte> drawElements = new PopDrawElementsUByte(GL_TRIANGLES);
+		drawElements->reserve(popDrawElements->size());
+
+		for (size_t j = 0; j < popDrawElements->size(); ++j)
+		{
+			drawElements->push_back(popDrawElements->at(j));
+		}
+		popGeometry->removePrimitiveSet(0);
+		popGeometry->addPrimitiveSet(drawElements);
+	} 
+	else if (numVertices <= USHRT_MAX) 
+	{
+		ref_ptr<PopDrawElementsUShort> drawElements = new PopDrawElementsUShort(GL_TRIANGLES);
+		drawElements->reserve(popDrawElements->size());
+
+		for (size_t j = 0; j < popDrawElements->size(); ++j)
+		{
+			drawElements->push_back(popDrawElements->at(j));
+		}
+		popGeometry->removePrimitiveSet(0);
+		popGeometry->addPrimitiveSet(drawElements);
+	}
+	else
+	{
+		popGeometry->removePrimitiveSet(0);
+		popGeometry->addPrimitiveSet(popDrawElements);
+	}
 }
 
 void ConvertToPopGeometryVisitor::findAndSortProtectedVertices(ref_ptr<Geometry> geometry, ref_ptr<PopGeometry> popGeometry, std::shared_ptr<std::vector<HalfEdge> > halfEdges)
@@ -285,8 +317,11 @@ void ConvertToPopGeometryVisitor::findAndSortProtectedVertices(ref_ptr<Geometry>
 	for (size_t i = 0; i < halfEdges->size(); ++i)
 	{
 		HalfEdge* halfEdge = &halfEdges->at(i);
+		auto protectedIt = protectedVertexIDMap.find(halfEdge->originalVertexID);
+		auto regularIt = regularVertexIDMap.find(halfEdge->originalVertexID);
         
-        if (protectedVertexSet.find(halfEdge->vertexID) != protectedVertexSet.end())
+        if (protectedVertexSet.find(halfEdge->vertexID) != protectedVertexSet.end() &&
+			protectedIt == protectedVertexIDMap.end())
 		{
 			// protected vertex buffer
 			addElementTo(protectedVertices, vertexArray, halfEdge->originalVertexID);
@@ -305,7 +340,7 @@ void ConvertToPopGeometryVisitor::findAndSortProtectedVertices(ref_ptr<Geometry>
 
 			protectedVertexIDMap[halfEdge->originalVertexID] = protectedVertices->getNumElements()-1;
 		}
-        else
+		else if (regularIt == regularVertexIDMap.end())
         {
 			// regular vertex buffer
 			addElementTo(regularVertices, vertexArray, halfEdge->originalVertexID);

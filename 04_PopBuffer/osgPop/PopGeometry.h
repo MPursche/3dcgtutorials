@@ -41,12 +41,13 @@ public:
 
     void reconnectUniforms();
 protected:
-	void setLod(float lod) const;
+	void setLod(float lod);
 	void updateUniforms();
 
 	virtual ~PopGeometry() {}
 
 	std::vector<GLint> _lodRange;
+	GLint _lastDrawEnd;
 	float _min;
 	float _max;
 	int _numFixedVertices;

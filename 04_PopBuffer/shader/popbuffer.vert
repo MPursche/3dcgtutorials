@@ -1,10 +1,10 @@
 #version 150 compatibility
 
-uniform vec3 minBounds;
-uniform vec3 maxBounds;
-uniform float lod;
+uniform vec3 osg_MinBounds;
+uniform vec3 osg_MaxBounds;
+uniform float osg_VertexLod;
+uniform int osg_ProtectedVertices;
 uniform vec4 lightDirection[3];
-uniform int fixedVertices;
 uniform bool visualizeLod;
 
 smooth out vec3 normal;
@@ -26,22 +26,25 @@ vec4 lodColor(float lod)
 	return mix(vec4(0.0, 1.0, 0.0, 1.0), vec4(1.0, 0.0, 0.0, 1.0), min(lod, 16.0)/16.0);
 }
 
-void main()
+vec4 quantizeVertex(vec4 vertex)
 {
-	vec3 vertex;
-	if (gl_VertexID < fixedVertices)
+	if (gl_VertexID < osg_ProtectedVertices)
 	{
-		vertex = gl_Vertex.xyz;
+		return vertex;
 	}
 	else
 	{
-		float factor = (pow(2.0, lod) - 1.0f) / (maxBounds.x-minBounds.x);
-		float invFactor = (maxBounds.x-minBounds.x) / pow(2.0, lod);
-		uvec3 q_vertex = uvec3(factor * (gl_Vertex.xyz-minBounds) + 0.5);
-		vertex = invFactor * vec3(q_vertex) + minBounds;
+		float factor = (pow(2.0, osg_VertexLod) - 1.0f) / (osg_MaxBounds.x-osg_MinBounds.x);
+		float invFactor = (osg_MaxBounds.x-osg_MinBounds.x) / pow(2.0, osg_VertexLod);
+		uvec3 q_vertex = uvec3(factor * (vertex.xyz-osg_MinBounds) + 0.5);
+		return vec4(invFactor * vec3(q_vertex) + osg_MinBounds, 1.0);
 	}
+}
 
-	gl_Position    = gl_ModelViewProjectionMatrix * vec4(vertex, 1.0);
+void main()
+{
+	vec4 vertex = quantizeVertex(gl_Vertex);
+	gl_Position = gl_ModelViewProjectionMatrix * vertex;
 	
 	normal = normalize(gl_NormalMatrix * gl_Normal);
 
@@ -59,7 +62,7 @@ void main()
 		for (int i = 0; i < 3; ++i)
 		{
 			ambient[i] =  gl_FrontMaterial.ambient * ambientLight[i];
-			diffuse[i] =  lodColor(lod);
+			diffuse[i] =  lodColor(osg_VertexLod);
 			specular[i] =  gl_FrontMaterial.specular * specularLight[i];
 		}
 		shininess = gl_FrontMaterial.shininess;

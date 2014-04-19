@@ -42,6 +42,7 @@
 
 int main(int argc, char** argv)
 {
+	osg::ArgumentParser arguments(&argc, argv);
 	osg::ref_ptr<osgViewer::Viewer> viewer = new osgViewer::Viewer;
 
 	viewer->setUpViewInWindow(100, 100, 800, 600);
@@ -53,21 +54,26 @@ int main(int argc, char** argv)
 
 	// create scene
 	osg::ref_ptr<osg::Node> scene = NULL;
-	if (argc > 1)
+	if (arguments.argc() > 1)
 	{
-		scene = osgDB::readNodeFile(std::string(argv[1]));
+		scene = osgDB::readNodeFile(arguments[1]);
         if (!scene) { return -1; }
                 
-        if (argc > 3 && (strcmp(argv[2], "--convert") == 0))
+        std::string outputFile;
+		if (arguments.read("--convert", outputFile))
         {
             // first split geometry with kd tree
-            osgExample::KdTreeVisitor kdVisitor(USHRT_MAX);
-            scene->accept(kdVisitor);
+			int maxVertices = 0;
+			if (arguments.read("--optimize", maxVertices))
+			{
+				osgExample::KdTreeVisitor kdVisitor(maxVertices);
+				scene->accept(kdVisitor);
+			}
 
             // convert geometry if requested
             osgPop::ConvertToPopGeometryVisitor popVisitor;
 	        scene->accept(popVisitor);
-            osgDB::writeNodeFile(*scene, std::string(argv[3]));
+			osgDB::writeNodeFile(*scene, outputFile);
         }
 	}
 	else

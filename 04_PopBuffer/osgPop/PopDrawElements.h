@@ -5,38 +5,98 @@
 namespace osgPop
 {
 
-class OSG_EXPORT PopDrawElements : public osg::DrawElementsUInt
+class OSG_EXPORT PopDrawElements
 {
 public:
-	PopDrawElements(GLenum mode=0)
-		: osg::DrawElementsUInt(mode)
-		, _start(0)
+	PopDrawElements()
+		: _start(0)
 		, _end(0)
 	{
 	}
+		
+	inline void setStart(size_t start) { _start = start; }
+	inline void setEnd(size_t end) { _end = end; }
+protected:
+	size_t _start;
+	size_t _end;
+};
 
-    PopDrawElements(const osg::DrawElementsUInt& array, const osg::CopyOp& copyop=osg::CopyOp::SHALLOW_COPY)
-        :    osg::DrawElementsUInt(array,copyop)
-        ,   _start(0)
-        ,   _end(size())
-    {}
+class OSG_EXPORT PopDrawElementsUByte : public PopDrawElements, public osg::DrawElementsUByte
+{
+public:
+	PopDrawElementsUByte(GLenum mode=0)
+		: osg::DrawElementsUByte(mode)
+	{
+		_end = size();
+	}
 
-    PopDrawElements(const PopDrawElements& array, const osg::CopyOp& copyop=osg::CopyOp::SHALLOW_COPY)
-        :    osg::DrawElementsUInt(array,copyop)
-        ,    _start(array._start)
-        ,    _end(array._end)
-    {}
+    PopDrawElementsUByte(const osg::DrawElementsUByte& array, const osg::CopyOp& copyop=osg::CopyOp::SHALLOW_COPY)
+        : osg::DrawElementsUByte(array,copyop)
+    {
+		_end = size();
+	}
+
+    PopDrawElementsUByte(const PopDrawElementsUByte& array, const osg::CopyOp& copyop=osg::CopyOp::SHALLOW_COPY)
+        : osg::DrawElementsUByte(array,copyop)
+    {
+		_end = size();
+	}
 
 	virtual void draw(osg::State& state, bool useVertexBufferObjects) const;
 	virtual void accept(osg::PrimitiveFunctor& functor) const;
 	virtual void accept(osg::PrimitiveIndexFunctor& functor) const;
+};
 
-	inline void setStart(size_t start) { _start = start; }
-	inline void setEnd(size_t end) { _end = end; }
+class OSG_EXPORT PopDrawElementsUShort : public PopDrawElements, public osg::DrawElementsUShort
+{
+public:
+	PopDrawElementsUShort(GLenum mode=0)
+		: osg::DrawElementsUShort(mode)
+	{
+		_end = size();
+	}
 
-protected:
-	size_t _start;
-	size_t _end;
+    PopDrawElementsUShort(const osg::DrawElementsUShort& array, const osg::CopyOp& copyop=osg::CopyOp::SHALLOW_COPY)
+        : osg::DrawElementsUShort(array,copyop)
+    {
+		_end = size();
+	}
+
+    PopDrawElementsUShort(const PopDrawElementsUShort& array, const osg::CopyOp& copyop=osg::CopyOp::SHALLOW_COPY)
+        : osg::DrawElementsUShort(array,copyop)
+    {
+		_end = size();
+	}
+
+	virtual void draw(osg::State& state, bool useVertexBufferObjects) const;
+	virtual void accept(osg::PrimitiveFunctor& functor) const;
+	virtual void accept(osg::PrimitiveIndexFunctor& functor) const;
+};
+
+class OSG_EXPORT PopDrawElementsUInt : public PopDrawElements, public osg::DrawElementsUInt
+{
+public:
+	PopDrawElementsUInt(GLenum mode=0)
+		: osg::DrawElementsUInt(mode)
+	{
+		_end = size();
+	}
+
+    PopDrawElementsUInt(const osg::DrawElementsUInt& array, const osg::CopyOp& copyop=osg::CopyOp::SHALLOW_COPY)
+        : osg::DrawElementsUInt(array,copyop)
+    {
+		_end = size();
+	}
+
+    PopDrawElementsUInt(const PopDrawElementsUInt& array, const osg::CopyOp& copyop=osg::CopyOp::SHALLOW_COPY)
+        : osg::DrawElementsUInt(array,copyop)
+    {
+		_end = size();
+	}
+
+	virtual void draw(osg::State& state, bool useVertexBufferObjects) const;
+	virtual void accept(osg::PrimitiveFunctor& functor) const;
+	virtual void accept(osg::PrimitiveIndexFunctor& functor) const;
 };
 
 }
