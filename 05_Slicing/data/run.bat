@@ -1,0 +1,1 @@
+osgviewer out.osgb --window 100 100 1024 1024
