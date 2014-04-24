@@ -11,7 +11,7 @@
 #include <osg/ref_ptr>
 #include <osg/PrimitiveSet>
 
-namespace osgPop
+namespace osgUtil
 {
 
 /**
@@ -40,17 +40,17 @@ struct HalfEdge
 
 template<class VertexArray, class Vector> struct HalfEdgeTriangleCollector
 {
-	VertexArray*							_vertexArray;
+	osg::ref_ptr<VertexArray>				_vertexArray;
+	std::map<Vector, unsigned int>          _vertexIDMap;
+	unsigned int                            _vertexIDCounter;
+	std::vector<HalfEdge>*                  _halfEdges;
     osg::ref_ptr<osg::DrawElementsUInt>     _drawElements;
-	std::map<Vector, unsigned int> _vertexIDMap;
-	unsigned int _vertexIDCounter;
-	std::shared_ptr<std::vector<HalfEdge> > _halfEdges;
 
     HalfEdgeTriangleCollector()
         : _vertexArray(NULL)
-		, _halfEdges(std::make_shared<std::vector<HalfEdge> >())
-        , _drawElements(new osg::DrawElementsUInt(GL_TRIANGLES))
+		, _halfEdges(NULL)
 		, _vertexIDCounter(0)
+        , _drawElements(NULL)
     {
 	}
 	                    
@@ -84,30 +84,26 @@ template<class VertexArray, class Vector> struct HalfEdgeTriangleCollector
 			_halfEdges->at(lastIndex).next = lastIndex-2;
 			_halfEdges->at(lastIndex).prev = lastIndex-1;
 
-            // add triangles to the draw element
+            // add triangle to the draw elements
             _drawElements->push_back(pos1);
-			_drawElements->push_back(pos2);
-			_drawElements->push_back(pos3);
+            _drawElements->push_back(pos2);
+            _drawElements->push_back(pos3);
     }
 };
 
 template<class VertexArray, class Vector> struct LodTriangleCollector
 {
-	VertexArray*							_vertexArray;
-	std::shared_ptr<std::vector<osg::ref_ptr<osg::DrawElementsUInt> > > _lodDrawElements;
+    osg::ref_ptr<VertexArray>							_vertexArray;
+	std::vector<osg::ref_ptr<osg::DrawElementsUInt> >*  _lodDrawElements;
 	float _min;
 	float _max;
     unsigned int _numProtectedVertices;
 
     LodTriangleCollector()
         : _vertexArray(NULL)
-		, _lodDrawElements(std::make_shared<std::vector<osg::ref_ptr<osg::DrawElementsUInt> > >())
+		, _lodDrawElements(NULL)
         , _numProtectedVertices(0)
-    {
-		for (size_t j = 0; j < 32; ++j)
-		{
-			_lodDrawElements->push_back(new osg::DrawElementsUInt(GL_TRIANGLES));
-		}
+    {		
 	}
 	                    
     void operator()(unsigned int pos1, unsigned int pos2, unsigned int pos3)

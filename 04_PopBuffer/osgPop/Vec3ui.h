@@ -1,6 +1,6 @@
 #pragma once
 
-namespace osgPop
+namespace osgUtil
 {
 
 /**

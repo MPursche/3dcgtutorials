@@ -1,7 +1,7 @@
 #pragma once
 
 #include <osg/NodeVisitor>
-#include "PopGeometry.h"
+#include "LevelOfDetailGeometry.h"
 
 namespace osgExample
 {
@@ -19,11 +19,11 @@ public:
 	{
 		for (auto drawable: geode.getDrawableList())
 		{
-			osg::ref_ptr<osgPop::PopGeometry> popGeometry = dynamic_cast<osgPop::PopGeometry*>(drawable.get());
+			osg::ref_ptr<osg::LevelOfDetailGeometry> lodGeometry = dynamic_cast<osg::LevelOfDetailGeometry*>(drawable.get());
 
-			if (popGeometry)
+			if (lodGeometry)
 			{
-				popGeometry->setMaxViewSpaceError(_maxViewSpaceError);
+				lodGeometry->setMaxViewSpaceError(_maxViewSpaceError);
 			}
 		}
 	}

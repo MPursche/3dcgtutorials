@@ -9,7 +9,7 @@ namespace osgExample {
 class DemoEventHandler : public osgGA::GUIEventHandler
 {
 public:
-    DemoEventHandler(osg::ref_ptr<osg::Node> scene,
+    DemoEventHandler(osg::ref_ptr<osg::Switch> scene,
                      osg::ref_ptr<osg::Uniform> visualizeLodUniform,
                      osg::ref_ptr<osg::Uniform> texturedUniform)
 		:	m_scene(scene)
@@ -23,7 +23,7 @@ public:
 
 	virtual bool handle(const osgGA::GUIEventAdapter& ea, osgGA::GUIActionAdapter& aa);
 private:
-	osg::ref_ptr<osg::Node>		m_scene;
+	osg::ref_ptr<osg::Switch>   m_scene;
     osg::ref_ptr<osg::Uniform>  m_visualizeLodUniform;
     osg::ref_ptr<osg::Uniform>  m_texturedUniform;
 	float						m_maxViewSpaceError;

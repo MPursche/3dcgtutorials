@@ -5,5 +5,5 @@ void main()
 {
 	gl_Position = gl_ModelViewProjectionMatrix * gl_Vertex;
 	vec4 viewspacePosition = gl_ModelViewMatrix * gl_Vertex;
-	depth = length(viewspacePosition.xyz);//-viewspacePosition.z;
+	depth = -viewspacePosition.z;
 }

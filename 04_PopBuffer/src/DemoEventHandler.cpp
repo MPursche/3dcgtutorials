@@ -1,5 +1,7 @@
 #include "DemoEventHandler.h"
 
+#include <osg/Switch>
+
 namespace osgExample {
 
 bool DemoEventHandler::handle(const osgGA::GUIEventAdapter& ea, osgGA::GUIActionAdapter& aa)
@@ -39,6 +41,14 @@ bool DemoEventHandler::handle(const osgGA::GUIEventAdapter& ea, osgGA::GUIAction
         case osgGA::GUIEventAdapter::KEY_L:
             m_visualizeLod = !m_visualizeLod;
             m_visualizeLodUniform->set(m_visualizeLod);
+            break;
+        case osgGA::GUIEventAdapter::KEY_1:
+            m_scene->setAllChildrenOff();
+            m_scene->setValue(0, true);
+            break;
+        case osgGA::GUIEventAdapter::KEY_2:
+            m_scene->setAllChildrenOff();
+            m_scene->setValue(1, true);
             break;
 		default:
 			break;

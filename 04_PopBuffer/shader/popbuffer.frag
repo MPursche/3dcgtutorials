@@ -11,15 +11,16 @@ smooth in vec4 ambient[3];
 smooth in vec4 diffuse[3];
 smooth in vec4 specular[3];
 smooth in float shininess;
+smooth in float specularNormilization;
 
-vec4 blinnPhongShading(vec3 n, vec3 h, vec3 l, vec4 cambient, vec4 cdiffuse, vec4 cspecular, float mshininess)
+vec4 blinnPhongShading(vec3 n, vec3 h, vec3 l, vec4 cambient, vec4 cdiffuse, vec4 cspecular, float mshininess, float mspecularNormilization)
 {
 	float NdotH = clamp(pow(dot(n, h), mshininess), 0.0, 1.0);
 	float NdotL = clamp(dot(n, l), 0.0, 1.0);
 
 	return cambient +
 		   cdiffuse * NdotL +
-		   cspecular * NdotH;
+		   cspecular * NdotH * mspecularNormilization;
 }
 
 void main()
@@ -29,7 +30,7 @@ void main()
 	vec4 color = vec4(0.0);
 	for (int i = 0; i < 3; ++i)
 	{
-		color += blinnPhongShading(normalize(normal), normalize(halfVector[i]), normalize(viewSpace_lightDir[i]), ambient[i] * textureColor, diffuse[i] * textureColor, specular[i], shininess);
+		color += blinnPhongShading(normalize(normal), normalize(halfVector[i]), normalize(viewSpace_lightDir[i]), ambient[i] * textureColor, diffuse[i] * textureColor, specular[i], shininess, specularNormilization);
 	}
 
 	gl_FragColor.rgb = clamp(color.rgb, vec3(0.0), vec3(1.0));

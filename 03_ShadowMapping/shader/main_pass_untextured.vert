@@ -1,8 +1,8 @@
 #version 150 compatibility
 
-uniform mat4 shadowMatrix;
-uniform mat4 shadowViewMatrix;
-uniform vec3 lightDir;
+uniform mat4 shadow_viewProjectionMatrix;
+uniform mat4 shadow_viewMatrix;
+uniform vec4 lightPosition;
 
 smooth out vec3 normal;
 smooth out vec3 halfVector;
@@ -12,10 +12,10 @@ smooth out float shadowDepth;
 void main()
 {
 	gl_Position    = gl_ModelViewProjectionMatrix * gl_Vertex;
-	gl_TexCoord[0] = shadowMatrix * gl_Vertex;
+	gl_TexCoord[0] = shadow_viewProjectionMatrix * gl_Vertex;
+	shadowDepth = -(shadow_viewMatrix * gl_Vertex).z;
 	normal = normalize(gl_NormalMatrix * gl_Normal);
-	viewSpace_lightDir = normalize(gl_NormalMatrix * lightDir);
-	shadowDepth = length((shadowViewMatrix * gl_Vertex).xyz);//-(shadowViewMatrix * gl_Vertex).z;
+	viewSpace_lightDir = normalize(gl_NormalMatrix * lightPosition.xyz);
 
 	// calculate eye vector
 	vec3 eye = -(gl_ModelViewMatrix * gl_Vertex).xyz;

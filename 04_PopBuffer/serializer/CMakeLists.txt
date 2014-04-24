@@ -5,10 +5,10 @@ INCLUDE_DIRECTORIES(
     ${OPENSCENEGRAPH_INCLUDE_DIRS}
 )
 
-SET(LIBNAME osgdb_serializers_osgpop)
+SET(LIBNAME osgdb_serializers_osg)
 
 SET(SERIALIZERS_OSG
-    PopGeometry.cpp
+    LevelOfDetailGeometry.cpp
 )
 
 IF(UNIX)
@@ -48,18 +48,21 @@ IF (MSVC)
   #INSTALL(TARGETS ${LIBNAME}
   #    LIBRARY DESTINATION ${OSG_PLUGIN_DIR}
   #    CONFIGURATIONS)
-  INSTALL(FILES ${CMAKE_BINARY_DIR}/bin/osgdb_serializers_osgpop.dll
+  INSTALL(FILES ${CMAKE_BINARY_DIR}/bin/osgdb_serializers_osg.dll
 	DESTINATION ${OSG_PLUGIN_DIR}
 	RENAME osgdb_serializers_osgpop.dll)
+  INSTALL(FILES ${CMAKE_BINARY_DIR}/bin/osgdb_serializers_osgd.dll
+	DESTINATION ${OSG_PLUGIN_DIR}
+	RENAME osgdb_serializers_osgd.dll)
 ELSE (MSVC)
  IF (CMAKE_BUILD_TYPE MATCHES Debug)
     MESSAGE(STATUS "Install plugin: ${CMAKE_BINARY_DIR}/bin/libosgdb_serializers_preprocessord.so")
-    INSTALL(FILES ${CMAKE_BINARY_DIR}/bin/libosgdb_serializers_osgpopd.so
+    INSTALL(FILES ${CMAKE_BINARY_DIR}/bin/libosgdb_serializers_osgd.so
 	DESTINATION ${OSG_PLUGIN_DIR}
 	RENAME osgdb_serializers_osgpopd.so)
   ELSE (CMAKE_BUILD_TYPE MATCHES Debug)
     MESSAGE(STATUS "Install plugin: ${CMAKE_BINARY_DIR}/bin/libosgdb_serializers_preprocessor.so")
-    INSTALL(FILES ${CMAKE_BINARY_DIR}/bin/libosgdb_serializers_osgpop.so
+    INSTALL(FILES ${CMAKE_BINARY_DIR}/bin/libosgdb_serializers_osg.so
 	DESTINATION ${OSG_PLUGIN_DIR}
 	RENAME osgdb_serializers_osgpop.so)
   ENDIF (CMAKE_BUILD_TYPE MATCHES Debug)

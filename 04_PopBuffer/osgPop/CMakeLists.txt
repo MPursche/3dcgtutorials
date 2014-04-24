@@ -15,13 +15,13 @@ include_directories(
 
 # Define source files
 set(sources
-	ConvertToPopGeometryVisitor.cpp
-	ConvertToPopGeometryVisitor.h
+	ConvertToLevelOfDetailGeometryVisitor.cpp
+	ConvertToLevelOfDetailGeometryVisitor.h
 	HalfEdge.h
-    PopGeometry.cpp
-    PopGeometry.h
-    PopDrawElements.cpp
-    PopDrawElements.h
+    LevelOfDetailGeometry.cpp
+    LevelOfDetailGeometry.h
+    LevelOfDetailDrawElements.cpp
+    LevelOfDetailDrawElements.h
 	Vec3ui.h
 )
 

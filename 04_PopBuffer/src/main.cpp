@@ -24,21 +24,56 @@
 // std
 #define _USE_MATH_DEFINES
 #include <cmath>
+#include <fstream>
+#include <sstream>
 
-#include "PopGeometry.h"
-#include "ConvertToPopGeometryVisitor.h"
+#include "LevelOfDetailGeometry.h"
+#include "ConvertToLevelOfDetailGeometryVisitor.h"
 #include "AddTextureUniformVisitor.h"
 #include "DemoEventHandler.h"
 #include "KdTreeVisitor.h"
 
 // osg
 #include <osg/ref_ptr>
+#include <osg/Switch>
 #include <osgViewer/Viewer>
 #include <osgGA/StateSetManipulator>
 #include <osgViewer/ViewerEventHandlers>
 #include <osgDB/ReadFile>
 #include <osgDB/WriteFile>
 #include <osg/CullFace>
+
+osg::Shader* loadShaderAndAddPrelude(const std::string& fileName, const std::string& uniformDefintion, const std::string& functionDefinition)
+{
+    osg::Shader* vertexShader = new osg::Shader(osg::Shader::VERTEX);
+
+    std::ifstream stream;
+    stream.open(fileName, std::ifstream::in);
+
+    if (!stream.is_open()) { return vertexShader; }
+
+    std::stringstream shaderCode;
+
+    while (!stream.eof())
+    {
+        std::string line;
+        std::getline(stream, line);
+
+        if (line.find("#version") != std::string::npos)
+        {
+            shaderCode << line << std::endl;
+            shaderCode << uniformDefintion << std::endl;
+            shaderCode << std::endl;
+            shaderCode << functionDefinition << std::endl;
+        } else {
+            shaderCode << line << std::endl;
+        }
+    }
+
+    vertexShader->setShaderSource(shaderCode.str());
+
+    return vertexShader;
+}
 
 int main(int argc, char** argv)
 {
@@ -53,27 +88,42 @@ int main(int argc, char** argv)
 	windows[0]->setWindowName("OpenSceneGraph Popbuffer Example");
 
 	// create scene
-	osg::ref_ptr<osg::Node> scene = NULL;
+    osg::ref_ptr<osg::Switch> scene = new osg::Switch();
+    osg::ref_ptr<osg::Node> model = NULL;
+    osg::ref_ptr<osg::Node> optimizedModel = NULL;
+
 	if (arguments.argc() > 1)
 	{
-		scene = osgDB::readNodeFile(arguments[1]);
-        if (!scene) { return -1; }
+        model = osgDB::readNodeFile(arguments[1]);
+        if (!model) { return -1; }
+
+        scene->addChild(model, true);
                 
         std::string outputFile;
 		if (arguments.read("--convert", outputFile))
         {
+            optimizedModel = dynamic_cast<osg::Node*>(model->clone(osg::CopyOp::DEEP_COPY_ALL)); 
+            
             // first split geometry with kd tree
 			int maxVertices = 0;
 			if (arguments.read("--optimize", maxVertices))
 			{
 				osgExample::KdTreeVisitor kdVisitor(maxVertices);
-				scene->accept(kdVisitor);
+				optimizedModel->accept(kdVisitor);
 			}
 
             // convert geometry if requested
-            osgPop::ConvertToPopGeometryVisitor popVisitor;
-	        scene->accept(popVisitor);
-			osgDB::writeNodeFile(*scene, outputFile);
+            osgUtil::ConvertToLevelOfDetailGeometryVisitor lodVisitor;
+	        optimizedModel->accept(lodVisitor);
+			osgDB::writeNodeFile(*optimizedModel, outputFile);
+
+            scene->setValue(0, false);
+            scene->addChild(optimizedModel, true);
+        } else {
+            optimizedModel = model;
+
+            scene->setValue(0, false);
+            scene->addChild(optimizedModel, true);
         }
 	}
 	else
@@ -128,43 +178,58 @@ int main(int argc, char** argv)
         
         osg::Geode* geode = new osg::Geode();
         geode->addDrawable(geometry);
-        scene = geode;
+                
+        osgUtil::ConvertToLevelOfDetailGeometryVisitor lodVisitor;
+	    geode->accept(lodVisitor);
 
-        osgPop::ConvertToPopGeometryVisitor popVisitor;
-	    scene->accept(popVisitor);
-	}
-
-	
+        scene->addChild(geode, true);
+	}	
 
 	osg::BoundingSphere bs = scene->getBound();
 
-	// add shader
-	osg::ref_ptr<osg::Program> program = new osg::Program();
-	osg::ref_ptr<osg::Shader> vertexShader = osgDB::readShaderFile("../shader/popbuffer.vert");
-	osg::ref_ptr<osg::Shader> fragmentShader = osgDB::readShaderFile("../shader/popbuffer.frag");
-	program->addShader(vertexShader);
-	program->addShader(fragmentShader);
-    
-	osg::ref_ptr<osg::StateSet> ss = scene->getOrCreateStateSet();
-    ss->setDataVariance(osg::Object::DYNAMIC);
-	ss->setAttributeAndModes(program, osg::StateAttribute::ON | osg::StateAttribute::OVERRIDE);
+    // add overal uniforms
+    AddTextureUniformVisitor textureVisitor;
+    scene->accept(textureVisitor);   
 
     osg::Uniform* lightDirection = new osg::Uniform(osg::Uniform::FLOAT_VEC4, "lightDirection", 3);
     lightDirection->setElement(0, osg::Vec4(1.0f, 0.0f, 1.0f, 0.0f));
     lightDirection->setElement(1, osg::Vec4(-1.0f, 0.0f, 1.0f, 0.0f));
     lightDirection->setElement(2, osg::Vec4(0.0f, 1.0f, 1.0f, 0.0f));
-	ss->addUniform(lightDirection);
-    osg::ref_ptr<osg::Uniform> visualizeLodUniform = new osg::Uniform("visualizeLod", false);
-    visualizeLodUniform->setDataVariance(osg::Object::DYNAMIC);
-    osg::ref_ptr<osg::Uniform> textureActiveUniform = new osg::Uniform("textureActive", false);
+    scene->getOrCreateStateSet()->addUniform(lightDirection);
 
-    ss->addUniform(visualizeLodUniform);
-	AddTextureUniformVisitor textureVisitor;
-    scene->accept(textureVisitor);
+	// add shader
+    {
+        osg::ref_ptr<osg::Program> program = new osg::Program();
+	    osg::ref_ptr<osg::Shader> vertexShader = osgDB::readShaderFile("../shader/normal_geometry.vert");
+	    osg::ref_ptr<osg::Shader> fragmentShader = osgDB::readShaderFile("../shader/popbuffer.frag");
+	    program->addShader(vertexShader);
+	    program->addShader(fragmentShader);
+        model->getOrCreateStateSet()->setAttributeAndModes(program, osg::StateAttribute::ON | osg::StateAttribute::OVERRIDE);
+    }
 
-	viewer->addEventHandler(new osgGA::StateSetManipulator(viewer->getCamera()->getOrCreateStateSet()));
-	viewer->addEventHandler(new osgViewer::StatsHandler());
-    viewer->addEventHandler(new osgExample::DemoEventHandler(scene, visualizeLodUniform, textureActiveUniform));
+    {
+	    osg::ref_ptr<osg::Program> program = new osg::Program();
+        osg::ref_ptr<osg::Shader> vertexShader = loadShaderAndAddPrelude("../shader/popbuffer.vert",
+                                                                         osg::LevelOfDetailGeometry::getVertexShaderUniformDefintion(),
+                                                                         osg::LevelOfDetailGeometry::getVertexShaderFunctionDefinition());
+        osg::ref_ptr<osg::Shader> fragmentShader = osgDB::readShaderFile("../shader/popbuffer.frag");
+	    program->addShader(vertexShader);
+	    program->addShader(fragmentShader);
+    
+        osg::ref_ptr<osg::StateSet> ss = optimizedModel->getOrCreateStateSet();
+        ss->setDataVariance(osg::Object::DYNAMIC);
+	    ss->setAttributeAndModes(program, osg::StateAttribute::ON | osg::StateAttribute::OVERRIDE);
+
+        osg::ref_ptr<osg::Uniform> visualizeLodUniform = new osg::Uniform("visualizeLod", false);
+        visualizeLodUniform->setDataVariance(osg::Object::DYNAMIC);
+        osg::ref_ptr<osg::Uniform> textureActiveUniform = new osg::Uniform("textureActive", false);
+
+        ss->addUniform(visualizeLodUniform);
+
+	    viewer->addEventHandler(new osgGA::StateSetManipulator(viewer->getCamera()->getOrCreateStateSet()));
+	    viewer->addEventHandler(new osgViewer::StatsHandler());
+        viewer->addEventHandler(new osgExample::DemoEventHandler(scene, visualizeLodUniform, textureActiveUniform));
+    }
 
 	viewer->setSceneData(scene);
 

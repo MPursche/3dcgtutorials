@@ -1,9 +1,5 @@
 #version 150 compatibility
 
-uniform vec3 osg_MinBounds;
-uniform vec3 osg_MaxBounds;
-uniform float osg_VertexLod;
-uniform int osg_ProtectedVertices;
 uniform vec4 lightDirection[3];
 uniform bool visualizeLod;
 
@@ -16,35 +12,21 @@ smooth out vec4 ambient[3];
 smooth out vec4 diffuse[3];
 smooth out vec4 specular[3];
 smooth out float shininess;
+smooth out float specularNormilization;
 
 const vec4 ambientLight[3] = vec4[3](vec4(0.1, 0.1, 0.1, 1.0), vec4(0.1, 0.1, 0.1, 1.0), vec4(0.0, 0.1, 0.1, 1.0));
-const vec4 diffuseLight[3] = vec4[3](vec4(0.6, 0.6, 0.6, 1.0), vec4(0.6, 0.6, 0.6, 1.0), vec4(0.0, 0.6, 0.6, 1.0));
-const vec4 specularLight[3] = vec4[3](vec4(0.9, 0.9, 0.9, 1.0), vec4(0.9, 0.9, 0.9, 1.0), vec4(0.0, 0.5, 0.5, 1.0));
+const vec4 light[3] = vec4[3](vec4(0.6, 0.6, 0.6, 1.0), vec4(0.6, 0.6, 0.6, 1.0), vec4(0.0, 0.6, 0.6, 1.0));
 
 vec4 lodColor(float lod)
 {
 	return mix(vec4(0.0, 1.0, 0.0, 1.0), vec4(1.0, 0.0, 0.0, 1.0), min(lod, 16.0)/16.0);
 }
 
-vec4 quantizeVertex(vec4 vertex)
-{
-	if (gl_VertexID < osg_ProtectedVertices)
-	{
-		return vertex;
-	}
-	else
-	{
-		float factor = (pow(2.0, osg_VertexLod) - 1.0f) / (osg_MaxBounds.x-osg_MinBounds.x);
-		float invFactor = (osg_MaxBounds.x-osg_MinBounds.x) / pow(2.0, osg_VertexLod);
-		uvec3 q_vertex = uvec3(factor * (vertex.xyz-osg_MinBounds) + 0.5);
-		return vec4(invFactor * vec3(q_vertex) + osg_MinBounds, 1.0);
-	}
-}
-
 void main()
 {
 	vec4 vertex = quantizeVertex(gl_Vertex);
 	gl_Position = gl_ModelViewProjectionMatrix * vertex;
+	//gl_Position = vec4(gl_MultiTexCoord0.st * 2.0 - 1.0, -1.0, 1.0);
 	
 	normal = normalize(gl_NormalMatrix * gl_Normal);
 
@@ -63,16 +45,26 @@ void main()
 		{
 			ambient[i] =  gl_FrontMaterial.ambient * ambientLight[i];
 			diffuse[i] =  lodColor(osg_VertexLod);
-			specular[i] =  gl_FrontMaterial.specular * specularLight[i];
+			specular[i] =  gl_FrontMaterial.specular * light[i];
 		}
 		shininess = gl_FrontMaterial.shininess;
+		specularNormilization = (gl_FrontMaterial.shininess + 8.0) * 0.03978873577297383394222094084313; // shiness + 8 / 8 * PI
 	} else {
 		for (int i = 0; i < 3; ++i)
 		{
 			ambient[i] = gl_FrontMaterial.ambient * ambientLight[i];
-			diffuse[i] =  gl_FrontMaterial.diffuse * diffuseLight[i];
-			specular[i] =  gl_FrontMaterial.specular * specularLight[i];
+
+			vec4 diffuseMaterial = gl_FrontMaterial.diffuse, specularMaterial = gl_FrontMaterial.diffuse;
+			/*if (any(greaterThan((diffuseMaterial.rgb + specularMaterial.rgb), vec3(1.0))))
+			{
+				diffuseMaterial = diffuseMaterial / (diffuseMaterial + specularMaterial);
+				specularMaterial = specularMaterial / (diffuseMaterial + specularMaterial);
+			}*/
+
+			diffuse[i] =  diffuseMaterial * light[i];
+			specular[i] =  specularMaterial * light[i];
 		}
 		shininess = gl_FrontMaterial.shininess;
+		specularNormilization = (gl_FrontMaterial.shininess + 8.0) * 0.03978873577297383394222094084313; // shiness + 8 / 8 * PI
 	}
 }

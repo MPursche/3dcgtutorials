@@ -17,6 +17,13 @@ include_directories(
 # Define source files
 set(sources
     src/main.cpp
+    src/ShadowedScene.cpp
+    src/ShadowedScene.h
+    src/FloatBufferShadowedScene.cpp
+    src/FloatBufferShadowedScene.h
+    src/DepthBufferShadowedScene.cpp
+    src/DepthBufferShadowedScene.h
+    src/SwitchTechniqueHandler.h
 )
 
 # Define shader files
@@ -26,7 +33,13 @@ set(shader
 	shader/main_pass.vert
 	shader/main_pass.frag
 	shader/main_pass_untextured.vert
-	shader/main_pass_untextured.frag	
+	shader/main_pass_untextured.frag
+	shader/depthbuffer/shadow_pass.vert
+	shader/depthbuffer/shadow_pass.frag
+	shader/depthbuffer/main_pass.vert
+	shader/depthbuffer/main_pass.frag
+	shader/depthbuffer/main_pass_untextured.vert
+	shader/depthbuffer/main_pass_untextured.frag	
 )
 
 # Define data files
